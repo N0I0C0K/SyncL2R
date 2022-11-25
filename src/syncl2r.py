@@ -1,6 +1,22 @@
 import os
+import time
 import paramiko
+import paramiko.ssh_exception as ssh_expection
 import json
+import typing
+import functools
+import utils.sftp_utils
+
+
+def clock(func: typing.Callable):
+    @functools.wraps(func)
+    def dec(*args, **kwargs):
+        s_t = time.time()
+        res = func(*args, **kwargs)
+        s_e = time.time()
+        print(f'{func.__name__} end=> {s_e-s_t}')
+        return res
+    return dec
 
 
 def test_connect(ssh_client: paramiko.SSHClient):
@@ -58,9 +74,29 @@ def get_ssh_client():
     return ssh_client
 
 
+def get_type(file_mode):
+    file_mode = file_mode >> 12
+    if (file_mode ^ 8) == 0:
+        return 1  # nomal file
+    elif (file_mode ^ 4) == 0:
+        return 2  # dir
+    return 0
+
+
+def test_command(ssh_client: paramiko.SSHClient):
+    try:
+        sftp = ssh_client.open_sftp()
+        sftp.stat('/home/asasda/aaa.txt')
+    except FileNotFoundError:
+        print('文件不存在')
+    #atts = sftp.listdir_attr('/home')
+    #print('\n'.join(map(lambda x: str(x.longname), atts)))
+
+
 if __name__ == '__main__':
     assh_client = get_ssh_client()
-    test_upload_file(assh_client)
+    print(utils.sftp_utils.get_file_md5('/home/a.txt', assh_client))
+    assh_client.close()
     # for i in os.walk('./test_upload_dir'):
     #     print(i)
     # print(os.listdir('./test_upload_dir'))
