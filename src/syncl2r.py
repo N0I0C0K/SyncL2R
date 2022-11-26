@@ -1,11 +1,10 @@
 import os
 import time
 import paramiko
-import paramiko.ssh_exception as ssh_expection
 import json
 import typing
 import functools
-import utils.sftp_utils
+import utils
 
 
 def clock(func: typing.Callable):
@@ -36,7 +35,6 @@ def upload_file_or_dir(sftp_client: paramiko.SFTPClient, localfile: str, remotef
         return
     else:
         upload_file(sftp_client, localfile, remotefile)
-        pass
 
 
 def upload_dir(sftp_client: paramiko.SFTPClient, localdir: str, remotedir: str):
@@ -62,7 +60,7 @@ def test_upload_file(ssh_client: paramiko.SSHClient):
 
 
 def get_ssh_client():
-    with open('./l2r-config.json', 'r', encoding='utf-8') as file:
+    with open('./l2r_config.json', 'r', encoding='utf-8') as file:
         config = json.load(file)
     ip = config['connect_config']['ip']
     port = config['connect_config']['port']
@@ -95,7 +93,7 @@ def test_command(ssh_client: paramiko.SSHClient):
 
 if __name__ == '__main__':
     assh_client = get_ssh_client()
-    print(utils.sftp_utils.get_file_md5('/home/a.txt', assh_client))
+    print(utils.ssh_utils.get_file_md5('/home/a.txt', assh_client))
     assh_client.close()
     # for i in os.walk('./test_upload_dir'):
     #     print(i)
