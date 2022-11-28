@@ -11,3 +11,4 @@ class SyncConfig:
         self.file_sync_config: dict = data['file_sync_config']
         self.exclude: list[str] = self.file_sync_config['exclude']
         self.remote_root_path = self.file_sync_config['remote_root_path']
+        self.root_path = os.path.abspath(self.file_sync_config['root_path'])

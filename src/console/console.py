@@ -1,6 +1,15 @@
-import rich
+from rich.style import Style
+from rich.theme import Theme
 from rich.console import Console
 
-console: Console = Console()
+theme = Theme({
+    "info": "cyan",
+    "warning": "magenta",
+    "danger": "bold red"
+})
 
-__all__ = ['console']
+console: Console = Console(theme=theme)
+
+cpprint = console.print
+
+__all__ = ['console', 'cpprint']

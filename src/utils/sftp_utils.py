@@ -1,6 +1,7 @@
 import enum
 import paramiko
 import os
+import typing
 
 
 class FileType(enum.IntFlag):
@@ -8,12 +9,13 @@ class FileType(enum.IntFlag):
     NORMAL_FILE = 8
 
 
-def upload_file_or_dir(sftp_client: paramiko.SFTPClient, localfile: str, remote_path: str):
+def upload_file_or_dir(sftp_client: paramiko.SFTPClient, localfile: str, remote_path: str, call_back: typing.Callable[[str], None] = None):
     if os.path.isdir(localfile):
         upload_dir(sftp_client, localfile, remote_path)
-        return
     else:
         upload_file(sftp_client, localfile, remote_path)
+        if call_back:
+            call_back(localfile)
 
 
 def upload_dir(sftp_client: paramiko.SFTPClient, localdir: str, remotedir: str):
