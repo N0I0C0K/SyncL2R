@@ -4,6 +4,14 @@ import json
 import pathlib
 from console import console
 
+import enum
+
+
+class SyncMode(enum.IntFlag):
+    force = 1       # 先删除掉原来的文件再上传新的文件
+    normal = 2      # 直接上传新的文件进行覆盖
+    soft = 3        # 只上传新添加的文件
+
 
 class SyncConfig:
     def __init__(self, config_file_path: str) -> None:
@@ -15,6 +23,7 @@ class SyncConfig:
         self.exclude: list[str] = self.file_sync_config['exclude']
         self.remote_root_path = self.file_sync_config['remote_root_path']
         self.root_path = os.path.abspath(self.file_sync_config['root_path'])
+        self.sync_mode: SyncMode = SyncMode.normal
 
     def escape_file(self, path: pathlib.Path) -> bool:
         for par in self.exclude:
@@ -22,6 +31,5 @@ class SyncConfig:
             #     console.log(f'{path} [red bold]ignore')
             #     return True
             if path.match(par):
-                console.log(f'{path.name} [red bold]ignore')
                 return True
         return False

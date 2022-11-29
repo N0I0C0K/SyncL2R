@@ -1,6 +1,6 @@
 import paramiko
 import pathlib
-from .sync_config import SyncConfig
+from .sync_config import SyncConfig, SyncMode
 from utils import sftp_utils, utils
 from console import console
 from rich import panel, padding
@@ -33,22 +33,30 @@ class SyncTask:
             r_path = r_path/dir_path.name
             if not sftp_utils.exist_remote(r_path.as_posix(), self.sftp_client):
                 self.sftp_client.mkdir(r_path.as_posix())
-                console.log(f'[blue]make dir {dir_path.relative_to(_path)}')
+                console.print(f'[blue]make dir {dir_path.relative_to(_path)}')
             for child_file in dir_path.iterdir():
                 upload_file_or_dir(child_file, r_path)
 
         def upload_file(file_path: pathlib.Path, r_path: pathlib.PurePath):
             if not file_path.exists():
-                console.log(f'[red bold]{file_path} not exist')
+                console.print(f'[red bold]{file_path} not exist')
                 return
             r_path = r_path/file_path.name
-            console.log(f'[green]upload {file_path.relative_to(_path)}')
+            console.print(f'[green]upload {file_path.relative_to(_path)}')
             self.sftp_client.put(file_path.as_posix(), r_path.as_posix())
 
         def upload_file_or_dir(file_or_dir: pathlib.Path, r_path: pathlib.PurePath):
+            if use_exclude and self.config.escape_file(file_or_dir):
+                return
             if file_or_dir.is_dir():
                 upload_dir(file_or_dir, r_path)
             else:
                 upload_file(file_or_dir, r_path)
+
+        if self.config.sync_mode == SyncMode.force:
+            del_p = (_remote_path/_path.name).as_posix()
+            if sftp_utils.exist_remote(del_p, self.sftp_client):
+                self.ssh_client.exec_command(f'rm -r {del_p}')
+                console.print('[bold underline]upload [red]force[/] mode')
 
         upload_file_or_dir(_path, _remote_path)
