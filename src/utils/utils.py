@@ -1,5 +1,6 @@
 import os
 import pathlib
+import typing
 
 from rich.filesize import decimal
 from rich.markup import escape
@@ -7,7 +8,7 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-def walk_directory(directory: pathlib.Path, tree: Tree) -> None:
+def walk_directory(directory: pathlib.Path, tree: Tree, *, escape_func: typing.Callable[[pathlib.Path], bool] | None = None) -> None:
     """Recursively build a Tree with directory contents."""
     # Sort dirs first then by filename
     paths = sorted(
@@ -18,14 +19,16 @@ def walk_directory(directory: pathlib.Path, tree: Tree) -> None:
         # Remove hidden files
         if path.name.startswith("."):
             continue
+        if escape_func and escape_func(path):
+            continue
         if path.is_dir():
             style = "dim" if path.name.startswith("__") else ""
             branch = tree.add(
-                f"[bold magenta]:open_file_folder: {escape(path.name)}",
+                f"[bold magenta]:open_file_folder: [link {path.as_uri()}]{escape(path.name)}",
                 style=style,
                 guide_style=style,
             )
-            walk_directory(path, branch)
+            walk_directory(path, branch, escape_func=escape_func)
         else:
             text_filename = Text(path.name, "green")
             text_filename.highlight_regex(r"\..*$", "bold red")
@@ -36,11 +39,29 @@ def walk_directory(directory: pathlib.Path, tree: Tree) -> None:
             tree.add(Text(icon) + text_filename)
 
 
-def get_dir_tree(path: str) -> Tree:
+def get_dir_tree(path: str, escape_func: typing.Callable[[pathlib.Path], bool] | None = None) -> Tree:
     path = os.path.abspath(path)
     tree = Tree(
         f":open_file_folder: [link file://{path}]{path}",
         guide_style="bold bright_blue",
     )
-    walk_directory(pathlib.Path(path), tree)
+    walk_directory(pathlib.Path(path), tree, escape_func=escape_func)
     return tree
+
+
+def get_file_md5(path: str) -> str | None:
+    path = os.path.abspath(path)
+    if not os.path.exists(path):
+        return None
+    match os.name:
+        case 'nt':
+            res = os.popen(f'certutil -hashfile {path} md5')
+            mds = res.read().split('\n')[1]
+            return mds
+        case 'posix':
+            res = os.popen(f'md5sum {path}')
+            return res.read()
+
+
+if __name__ == '__main__':
+    print(get_file_md5('./readme.md'))

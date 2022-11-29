@@ -1,7 +1,8 @@
+import os
 import enum
 import paramiko
-import os
 import typing
+import pathlib
 
 
 class FileType(enum.IntFlag):
@@ -9,7 +10,13 @@ class FileType(enum.IntFlag):
     NORMAL_FILE = 8
 
 
-def upload_file_or_dir(sftp_client: paramiko.SFTPClient, localfile: str, remote_path: str, call_back: typing.Callable[[str], None] = None):
+def upload_file_or_dir(sftp_client: paramiko.SFTPClient,
+                       localfile: str, remote_path: str,
+                       call_back: typing.Callable[[str], None] | None = None,
+                       *,
+                       escape_func: typing.Callable[[pathlib.Path], bool] | None = None):
+    if escape_func and escape_func(pathlib.Path(localfile)):
+        return
     if os.path.isdir(localfile):
         upload_dir(sftp_client, localfile, remote_path)
     else:
@@ -18,7 +25,9 @@ def upload_file_or_dir(sftp_client: paramiko.SFTPClient, localfile: str, remote_
             call_back(localfile)
 
 
-def upload_dir(sftp_client: paramiko.SFTPClient, localdir: str, remotedir: str):
+def upload_dir(sftp_client: paramiko.SFTPClient,
+               localdir: str,
+               remotedir: str):
     if not os.path.isdir(localdir):
         return
     dir_name = os.path.basename(localdir)
@@ -35,7 +44,7 @@ def upload_file(sftp_client: paramiko.SFTPClient, localfile: str, remotedir: str
     sftp_client.put(localfile, f'{remotedir}/{os.path.basename(localfile)}')
 
 
-def get_file_type(file_stat: paramiko.SFTPAttributes) -> FileType:
+def get_file_type(file_stat: paramiko.SFTPAttributes) -> FileType | None:
     file_mode = file_stat.st_mode >> 12
     for name in FileType:
         if (file_mode ^ name.value) == 0:

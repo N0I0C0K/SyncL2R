@@ -1,5 +1,8 @@
 import os
+import re
 import json
+import pathlib
+from console import console
 
 
 class SyncConfig:
@@ -12,3 +15,13 @@ class SyncConfig:
         self.exclude: list[str] = self.file_sync_config['exclude']
         self.remote_root_path = self.file_sync_config['remote_root_path']
         self.root_path = os.path.abspath(self.file_sync_config['root_path'])
+
+    def escape_file(self, path: pathlib.Path) -> bool:
+        for par in self.exclude:
+            # if re.match(par, path):
+            #     console.log(f'{path} [red bold]ignore')
+            #     return True
+            if path.match(par):
+                console.log(f'{path.name} [red bold]ignore')
+                return True
+        return False
