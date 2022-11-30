@@ -1,15 +1,31 @@
 # SyncL2R
 
-同步本地文件夹和远程主机的文件夹内容
+Synchronize folder contents of local folders and remote hosts
 
-- 可选择同步文件
-- 支持正则表达式匹配
-- 可设置自动同步
-- 可设置监控文件夹变化自动同步
-- 美观的终端输出
+- You can choose to synchronize files
+- Support regular expression matching
+- Manually synchronize files, pull file from remote
+- Automatic synchronization can be set(background task require)
+- Automatic synchronization of monitored folder changes can be set(background task require)
+- Beautiful terminal output
 
-## require
+## Command
+
+for more help, type
+`syncl2r --help`
+
+| command | doc                            | usage |
+| ------- | ------------------------------ | ----- |
+| push    | sync local file to remote host |
+| pull    | pull remote file               |
+| init    | init l2r_config.json           |
+
+## install
+
+**require**
 
 ```
-python >= 3.7
+python >= 3.10
 ```
+
+1. `pip install -r requirements.txt`

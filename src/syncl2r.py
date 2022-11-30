@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import typer
 
@@ -39,6 +40,11 @@ def init(sync_dir: str,
          remote_path: str = typer.Option(
              default='', help='remote path to sync'),
          config_file_name: str = typer.Option(default='l2r_config', help='file name to the config name => config_file_name.json')):
+    if not os.path.exists(sync_dir):
+        console.print(f'[red]{sync_dir} does not exist')
+        return
+    sync_dir = os.path.abspath(sync_dir)
+
     init_data = {
         "connect_config": {
             "ip": "",
