@@ -3,11 +3,12 @@ from rich.theme import Theme
 from rich.console import Console
 
 cus_theme = Theme({
-    "info": "green",
-    "warning": "bold yellow",
-    "danger.high": "bold reverse red",
-    "danger": "bold red",
-    "path": "yellow3"
+    'info': 'green',
+    'info.low': 'dim cyan on black',
+    'warning': 'bold yellow',
+    'danger.high': 'bold reverse red',
+    'danger': 'bold red',
+    'path': 'yellow3'
 })
 
 console: Console = Console(theme=cus_theme)

@@ -7,7 +7,7 @@ from console import console
 import enum
 
 
-class SyncMode(enum.IntFlag):
+class SyncMode(enum.IntEnum):
     force = 1       # 先删除掉原来的文件再上传新的文件
     normal = 2      # 直接上传新的文件进行覆盖
     soft = 3        # 只上传新添加的文件

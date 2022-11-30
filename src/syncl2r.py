@@ -12,16 +12,16 @@ app = typer.Typer()
 
 
 @app.command(name='push')
-def push(config_path: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json'),
-         sync_mode: int = typer.Option(2, help='sync mode 1:force(del then upload) 2:normal 3:soft(upload only new files)')):
-    if not os.path.exists(config_path):
+def push(config: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json'),
+         mode: int = typer.Option(2, help='sync mode 1:force(del then upload) 2:normal 3:soft(upload only new files)')):
+    if not os.path.exists(config):
         console.print(
-            f'[red bold]config file [blue]({config_path})[/] not find.\n[green]please check whether [blue]{config_path}[/] exists')
+            f'[danger]config file [blue]({config})[/] not find.\n[info]please check whether [blue]{config}[/] exists')
         return
-    connect_config = ConnectConfig(config_path)
+    connect_config = ConnectConfig(config)
     connection = Connection(connect_config)
-    sync_config = SyncConfig(config_path)
-    sync_config.sync_mode = SyncMode.force
+    sync_config = SyncConfig(config)
+    sync_config.sync_mode = SyncMode(mode)
     sftp_client = connection.ssh_client.open_sftp()
     sync_task = SyncTask(connection.ssh_client, sftp_client, sync_config)
     sync_task.start()
@@ -66,6 +66,13 @@ def init(sync_dir: str,
         return
     with open(conifg_file, 'w+', encoding='utf-8') as file:
         json.dump(init_data, file, indent=4)
+
+
+@app.command(name='show')
+def show_files(config_path: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json')):
+    sync_config = SyncConfig(config_path)
+    sync_task = SyncTask(None, None, sync_config)  # type: ignore #ignore
+    sync_task.show_sync_file_tree()
 
 
 @ app.command(name='test')

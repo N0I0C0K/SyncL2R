@@ -21,11 +21,16 @@ class SyncTask:
             f'[green]upload complete [red]{upload_file_nums}[/] file upload')
 
     def show_sync_file_tree(self):
-        pprint('[red bold]find file prepare to sync: ')
+        pprint('[red bold]file tree prepare to sync: ')
         pprint(padding.Padding(
             utils.get_dir_tree(self.config.root_path, self.config.escape_file), (0, 0, 0, 0)))
 
     def upload(self, path: str, remote_path: str, *, use_exclude=True) -> tuple[int, int]:
+        pprint(
+            f'[danger.high]upload [yellow2]{self.config.sync_mode.name}[/] mode')
+
+        if self.sftp_client is None:
+            pprint('[danger.high]connection failed')
         _path = pathlib.Path(path)
         _remote_path = pathlib.PurePath(remote_path)
         file_upload, dir_maked = 0, 0
@@ -45,6 +50,10 @@ class SyncTask:
                 pprint(f'[danger]{file_path} not exist')
                 return
             r_path = r_path/file_path.name
+            if self.config.sync_mode == SyncMode.soft and sftp_utils.exist_remote(r_path.as_posix(), self.sftp_client):
+                pprint(
+                    f'[info.low]skip [yellow]{file_path.relative_to(path)}[/] (already exist)')
+                return
             with progress.Progress() as pross:
                 task = pross.add_task(
                     f'[green]uploading [yellow]{file_path.relative_to(_path)}')
@@ -52,7 +61,7 @@ class SyncTask:
                 def task_pross(nowhave: int, allbyte: int):
                     pross.update(task, completed=nowhave/allbyte*100)
                 self.sftp_client.put(file_path.as_posix(),
-                                     r_path.as_posix(), task_pross)
+                                     r_path.as_posix(), task_pross, confirm=True)
             file_upload += 1
 
         def upload_file_or_dir(file_or_dir: pathlib.Path, r_path: pathlib.PurePath):
@@ -66,9 +75,8 @@ class SyncTask:
         if self.config.sync_mode == SyncMode.force:
             del_p = (_remote_path/_path.name).as_posix()
             if sftp_utils.exist_remote(del_p, self.sftp_client):
-                pprint(
-                    '[danger.high]!!!upload [bright_red]force[/] mode')
                 self.ssh_client.exec_command(f'rm -r {del_p}')
+                pprint(f'[danger.high]del remote folder [yellow2]({del_p})')
 
         upload_file_or_dir(_path, _remote_path)
         return file_upload, dir_maked
