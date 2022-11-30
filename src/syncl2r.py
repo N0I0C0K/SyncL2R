@@ -29,11 +29,13 @@ def push(config_path: str = typer.Option('./l2r_config.json', help='config file 
 
 
 @app.command()
-def pull():
+def pull(files: list[str], config_path: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json')):
+    print(files)
+
     pass
 
 
-@app.command(name='init')
+@ app.command(name='init')
 def init(sync_dir: str,
          remote_url: str = typer.Option(
              default='', help='the link to the remote ssh host. like => username:password@ip or username:password@ip:port'),
@@ -66,7 +68,7 @@ def init(sync_dir: str,
         json.dump(init_data, file, indent=4)
 
 
-@app.command(name='test')
+@ app.command(name='test')
 def test_func():
     pass
 

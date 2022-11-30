@@ -23,6 +23,8 @@ class SyncConfig:
         self.exclude: list[str] = self.file_sync_config['exclude']
         self.remote_root_path = self.file_sync_config['remote_root_path']
         self.root_path = os.path.abspath(self.file_sync_config['root_path'])
+        if not os.path.exists(self.root_path):
+            raise FileNotFoundError
         self.sync_mode: SyncMode = SyncMode.normal
 
     def escape_file(self, path: pathlib.Path) -> bool:

@@ -1,1 +1,1 @@
-from .console import console, cpprint
+from .console import console, pprint
