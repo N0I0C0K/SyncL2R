@@ -1,2 +1,5 @@
-from console import console
-from sync_core.sync_task import SyncTask
+import pathlib
+
+pa = pathlib.PurePath('c:/a/a/ab')
+pb = pathlib.PurePath(pa, './a.py')
+print(pb)

@@ -1,3 +1,4 @@
+import os
 import paramiko
 import pathlib
 from .sync_config import SyncConfig, SyncMode
@@ -34,6 +35,11 @@ class SyncTask:
         _path = pathlib.Path(path)
         _remote_path = pathlib.PurePath(remote_path)
         file_upload, dir_maked = 0, 0
+
+        if not sftp_utils.exist_remote(_remote_path.as_posix(), self.sftp_client):
+            pprint(
+                f'[warning]remote does not exist {_remote_path.as_posix()}, now created')
+            self.sftp_client.mkdir(_remote_path.as_posix())
 
         def upload_dir(dir_path: pathlib.Path, r_path: pathlib.PurePath):
             r_path = r_path/dir_path.name
@@ -77,16 +83,39 @@ class SyncTask:
             if sftp_utils.exist_remote(del_p, self.sftp_client):
                 self.ssh_client.exec_command(f'rm -r {del_p}')
                 pprint(f'[danger.high]del remote folder [yellow2]({del_p})')
-
-        upload_file_or_dir(_path, _remote_path)
+        if _path.is_dir():
+            for child_file in _path.iterdir():
+                upload_file_or_dir(child_file, _remote_path)
+        else:
+            upload_file_or_dir(_path, _remote_path)
         return file_upload, dir_maked
 
-    def pull(self, remote_file: str):
-        remote_path = pathlib.PurePath(
-            self.config.remote_root_path, remote_file)
-        stat = self.sftp_client.stat(remote_path.as_posix())
-        match sftp_utils.get_file_type(stat):
-            case sftp_utils.FileType.DIR:
-                pass
-            case sftp_utils.FileType.NORMAL_FILE:
-                pass
+    def pull(self, relative_path: str):
+        _loc_path = pathlib.PurePath(relative_path)
+        loc_root_path = pathlib.Path(self.config.root_path)
+        remote_roott_path = pathlib.PurePath(self.config.remote_root_path)
+
+        def pull_dir(relative_loc_dir: pathlib.PurePath):
+            _p = (loc_root_path/relative_loc_dir)
+            if not _p.exists():
+                pprint(f'[info]mkdir {relative_loc_dir.as_posix()}')
+                _p.mkdir()
+
+        def pull_file(relative_loc_file: pathlib.PurePath):
+            remote_path = pathlib.PurePath(
+                remote_roott_path, relative_loc_file)
+            pprint(f'[info]pull {relative_loc_file.as_posix()}')
+            self.sftp_client.get(remote_path.as_posix(),
+                                 (loc_root_path/relative_loc_file).as_posix())
+
+        def pull_file_or_dir(relative_path: pathlib.PurePath):
+            remote_path = pathlib.PurePath(
+                remote_roott_path, relative_path)
+            stat = self.sftp_client.stat(remote_path.as_posix())
+            match sftp_utils.get_file_type(stat):
+                case sftp_utils.FileType.DIR:
+                    pull_dir(relative_path)
+                case sftp_utils.FileType.NORMAL_FILE:
+                    pull_file(relative_path)
+
+        pull_file_or_dir(_loc_path)

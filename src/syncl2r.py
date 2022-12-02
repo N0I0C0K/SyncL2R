@@ -5,7 +5,7 @@ import re
 import typer
 
 from connect_core import ConnectConfig, Connection
-from console import console
+from console import pprint
 from sync_core import SyncConfig, SyncMode, SyncTask
 
 app = typer.Typer()
@@ -15,10 +15,10 @@ app = typer.Typer()
 def push(config: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json'),
          mode: int = typer.Option(2, help='sync mode 1:force(del then upload) 2:normal 3:soft(upload only new files)')):
     if not os.path.exists(config):
-        console.print(
+        pprint(
             f'[danger]config file [blue]({config})[/] not find.\n[info]please check whether [blue]{config}[/] exists')
         return
-    connect_config = ConnectConfig(config)
+    connect_config = ConnectConfig(config_path=config)
     connection = Connection(connect_config)
     sync_config = SyncConfig(config)
     sync_config.sync_mode = SyncMode(mode)
@@ -30,29 +30,44 @@ def push(config: str = typer.Option('./l2r_config.json', help='config file path,
 
 @app.command()
 def pull(files: list[str], config_path: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json')):
-    print(files)
-
     pass
 
 
 @ app.command(name='init')
-def init(sync_dir: str,
-         remote_url: str = typer.Option(
-             default='', help='the link to the remote ssh host. like => username:password@ip or username:password@ip:port'),
-         remote_path: str = typer.Option(
-             default='', help='remote path to sync'),
-         config_file_name: str = typer.Option(default='l2r_config', help='file name to the config name => config_file_name.json')):
+def init(remote_url: str = typer.Argument(
+        ..., help='the link to the remote ssh host. like => username:password@ip or username:password@ip:port'),
+        remote_path: str = typer.Option(
+        default='', help='remote path to sync'),
+        config_name: str = typer.Option(
+        default='config', help='file name to the config name => l2r_config_name.json'),
+        test_connect: bool = typer.Option(default=False, help='test connect to the host')):
+    sync_dir = '.'
     if not os.path.exists(sync_dir):
-        console.print(f'[red]{sync_dir} does not exist')
+        pprint(f'[red]{sync_dir} does not exist')
         return
-    sync_dir = os.path.abspath(sync_dir)
+
+    res = re.match(r"(.*?):(.*?)@([0-9,\.]*):?([0-9]*)?",
+                   remote_url)
+    if res is None:
+        pprint(f'[danger]{remote_url} is invalid')
+        return
+    username, pwd, ip, port = res.groups()
+    port = 22 if port == '' else int(port)
+    if test_connect:
+        try:
+            conn = Connection(ConnectConfig(username=username,
+                                            password=pwd, port=port, ip=ip))
+        except:
+            pprint(
+                f'[danger.high]exception happend during connecting to the host {remote_url}')
+            return
 
     init_data = {
         "connect_config": {
-            "ip": "",
-            "port": 22,
-            "username": "",
-            "password": ""
+            "ip": ip,
+            "port": port,
+            "username": username,
+            "password": pwd
         },
         "file_sync_config": {
             "root_path": sync_dir,
@@ -60,10 +75,9 @@ def init(sync_dir: str,
             "exclude": []
         }
     }
-    conifg_file = f'./{config_file_name}.json'
+    conifg_file = f'./l2r_{config_name}.json'
     if os.path.exists(conifg_file):
-        console.print(f'[red]{conifg_file} already exist!')
-        return
+        pprint(f'[red]{conifg_file} already exist! now relpace')
     with open(conifg_file, 'w+', encoding='utf-8') as file:
         json.dump(init_data, file, indent=4)
 

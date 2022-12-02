@@ -1,8 +1,6 @@
 import os
-import re
 import json
 import pathlib
-from console import console
 
 import enum
 
@@ -21,8 +19,9 @@ class SyncConfig:
             data = json.load(file)
         self.file_sync_config: dict = data['file_sync_config']
         self.exclude: list[str] = self.file_sync_config['exclude']
-        self.remote_root_path = self.file_sync_config['remote_root_path']
-        self.root_path = os.path.abspath(self.file_sync_config['root_path'])
+        self.remote_root_path: str = self.file_sync_config['remote_root_path']
+        self.root_path: str = os.path.abspath(
+            self.file_sync_config['root_path'])
         if not os.path.exists(self.root_path):
             raise FileNotFoundError
         self.sync_mode: SyncMode = SyncMode.normal
