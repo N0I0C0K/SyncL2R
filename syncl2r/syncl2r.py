@@ -93,6 +93,8 @@ def show_files(config_path: str = typer.Option('./l2r_config.json', help='config
 def test_func():
     pass
 
+def main():
+    app()
 
 if __name__ == '__main__':
-    app()
+    main()

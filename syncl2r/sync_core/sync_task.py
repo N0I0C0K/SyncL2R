@@ -100,18 +100,29 @@ class SyncTask:
             if not _p.exists():
                 pprint(f'[info]mkdir {relative_loc_dir.as_posix()}')
                 _p.mkdir()
+            for file in _p.iterdir():
+                pull_file_or_dir(file.relative_to(loc_root_path))
 
         def pull_file(relative_loc_file: pathlib.PurePath):
             remote_path = pathlib.PurePath(
                 remote_roott_path, relative_loc_file)
-            pprint(f'[info]pull {relative_loc_file.as_posix()}')
+            if not sftp_utils.exist_remote(remote_path.as_posix(), self.sftp_client):
+                pprint(
+                    f'[warning]{relative_loc_file.as_posix()} does not exist on remote server')
+                return
+            pprint(f'[info]pulling {relative_loc_file.as_posix()}')
             self.sftp_client.get(remote_path.as_posix(),
                                  (loc_root_path/relative_loc_file).as_posix())
 
         def pull_file_or_dir(relative_path: pathlib.PurePath):
             remote_path = pathlib.PurePath(
                 remote_roott_path, relative_path)
-            stat = self.sftp_client.stat(remote_path.as_posix())
+            try:
+                stat = self.sftp_client.stat(remote_path.as_posix())
+            except FileNotFoundError:
+                pprint(
+                    f'[warning]{relative_path} does not exist on remote server')
+                return
             match sftp_utils.get_file_type(stat):
                 case sftp_utils.FileType.DIR:
                     pull_dir(relative_path)
