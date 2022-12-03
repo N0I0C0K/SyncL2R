@@ -22,10 +22,11 @@ for more help, type
 
 ## install
 
+**Run**
+`python setup.py install`
+
 **require**
 
 ```
 python >= 3.10
 ```
-
-1. `pip install -r requirements.txt`
