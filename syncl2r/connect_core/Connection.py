@@ -1,6 +1,6 @@
 import paramiko
 from .connect_config import ConnectConfig
-from console import console
+from console import console, pprint
 
 
 class Connection:
@@ -10,11 +10,18 @@ class Connection:
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         console.print(
             f'[info]start link to [underline red]{self.config.ip}:{self.config.port}@{self.config.username}', end=' ')
-        self.ssh_client.connect(connect_config.ip,
-                                connect_config.port,
-                                connect_config. username,
-                                connect_config. password)
-        console.print('[green]success')
+        try:
+            self.ssh_client.connect(connect_config.ip,
+                                    connect_config.port,
+                                    connect_config. username,
+                                    connect_config. password,
+                                    timeout=5)
+        except TimeoutError:
+            pprint(
+                f'[danger.high]can not connect to the {connect_config.ip}:{connect_config.port}!')
+            raise
+        else:
+            console.print('[green]success')
         self.exec_command = self.ssh_client.exec_command
 
     def __del__(self):

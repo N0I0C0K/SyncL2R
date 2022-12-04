@@ -9,12 +9,11 @@ from rich import panel, padding, progress
 
 class SyncTask:
     def __init__(self, ssh_client: paramiko.SSHClient, sftp_client: paramiko.SFTPClient, config: SyncConfig) -> None:
-        # TODO 这个地方应该是可以选择传入 config_file 或者直接传入配置信息
         self.ssh_client = ssh_client
         self.sftp_client = sftp_client
         self.config = config
 
-    def start(self):
+    def push(self):
         self.show_sync_file_tree()
         upload_file_nums, make_dir_nums = self.upload(
             self.config.root_path, self.config.remote_root_path)
@@ -23,6 +22,7 @@ class SyncTask:
 
     def show_sync_file_tree(self):
         pprint('[red bold]file tree prepare to sync: ')
+        # TODO 此处应该对比本地和远程文件,将不同的文件进行标注
         pprint(padding.Padding(
             utils.get_dir_tree(self.config.root_path, self.config.escape_file), (0, 0, 0, 0)))
 
@@ -79,7 +79,7 @@ class SyncTask:
                 upload_file(file_or_dir, r_path)
 
         if self.config.sync_mode == SyncMode.force:
-            del_p = (_remote_path/_path.name).as_posix()
+            del_p = (_remote_path/'*').as_posix()
             if sftp_utils.exist_remote(del_p, self.sftp_client):
                 self.ssh_client.exec_command(f'rm -r {del_p}')
                 pprint(f'[danger.high]del remote folder [yellow2]({del_p})')

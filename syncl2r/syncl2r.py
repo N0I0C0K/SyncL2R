@@ -24,16 +24,22 @@ def push(config: str = typer.Option('./l2r_config.json', help='config file path,
     sync_config.sync_mode = SyncMode(mode)
     sftp_client = connection.ssh_client.open_sftp()
     sync_task = SyncTask(connection.ssh_client, sftp_client, sync_config)
-    sync_task.start()
+    sync_task.push()
     sftp_client.close()
 
 
 @app.command()
-def pull(files: list[str], config_path: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json')):
-    pass
+def pull(files: list[str], config: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json')):
+    connect_config = ConnectConfig(config_path=config)
+    connection = Connection(connect_config)
+    sync_config = SyncConfig(config)
+    sftp_client = connection.ssh_client.open_sftp()
+    sync_task = SyncTask(connection.ssh_client, sftp_client, sync_config)
+    for file in files:
+        sync_task.pull(file)
 
 
-@ app.command(name='init')
+@app.command(name='init')
 def init(remote_url: str = typer.Argument(
         ..., help='the link to the remote ssh host. like => username:password@ip or username:password@ip:port'),
         remote_path: str = typer.Option(
