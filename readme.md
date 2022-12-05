@@ -1,5 +1,7 @@
 # SyncL2R
 
+[中文](./readme_cn.md)
+
 Synchronize folder contents of local folders and remote hosts
 
 - You can choose to synchronize files
