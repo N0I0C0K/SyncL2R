@@ -3,6 +3,7 @@ import enum
 import paramiko
 import typing
 import pathlib
+from .utils import get_file_md5
 
 
 class FileType(enum.IntFlag):
@@ -45,11 +46,17 @@ def upload_file(sftp_client: paramiko.SFTPClient, localfile: str, remotedir: str
 
 
 def get_file_type(file_stat: paramiko.SFTPAttributes) -> FileType | None:
-    file_mode = file_stat.st_mode >> 12
+    file_mode = file_stat.st_mode >> 12  # type: ignore
     for name in FileType:
         if (file_mode ^ name.value) == 0:
             return name
     return
+
+
+def get_remote_file_md5(file_path: str, ssh_client: paramiko.SSHClient) -> str:
+    stdin, stdout, stderr = ssh_client.exec_command(f'md5sum {file_path}')
+    res = stdout.read().decode()
+    return res.split()[0]
 
 
 def get_file_type_from_path(file_path: str, sftp_client: paramiko.SFTPClient) -> FileType | None:
@@ -58,6 +65,10 @@ def get_file_type_from_path(file_path: str, sftp_client: paramiko.SFTPClient) ->
         return get_file_type(stat)
     except:
         return None
+
+
+def rfile_equal_lfile(remote_file_path: str, local_file_path: str, ssh_client: paramiko.SSHClient) -> bool:
+    return get_file_md5(local_file_path) == get_remote_file_md5(remote_file_path, ssh_client)
 
 
 def exist_remote(file_path: str, sftp_client: paramiko.SFTPClient) -> bool:

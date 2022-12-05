@@ -14,5 +14,6 @@ cus_theme = Theme({
 console: Console = Console(theme=cus_theme)
 
 pprint = console.print
+llog = console.log
 
 __all__ = ['console', 'pprint']

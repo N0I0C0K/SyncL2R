@@ -3,7 +3,7 @@ import paramiko
 import pathlib
 from .sync_config import SyncConfig, SyncMode
 from utils import sftp_utils, utils
-from console import pprint
+from console import pprint, llog
 from rich import panel, padding, progress
 
 
@@ -56,9 +56,14 @@ class SyncTask:
                 pprint(f'[danger]{file_path} not exist')
                 return
             r_path = r_path/file_path.name
-            if self.config.sync_mode == SyncMode.soft and sftp_utils.exist_remote(r_path.as_posix(), self.sftp_client):
+            if self.config.sync_mode == SyncMode.soft and\
+                    sftp_utils.exist_remote(r_path.as_posix(), self.sftp_client):
                 pprint(
                     f'[info.low]skip [yellow]{file_path.relative_to(path)}[/] (already exist)')
+                return
+            if sftp_utils.exist_remote(r_path.as_posix(), self.sftp_client) and\
+                    sftp_utils.rfile_equal_lfile(r_path.as_posix(), file_path.as_posix(), self.ssh_client):
+                pprint(f'[warning]{file_path.name} has no change, skip')
                 return
             with progress.Progress() as pross:
                 task = pross.add_task(
@@ -93,30 +98,44 @@ class SyncTask:
     def pull(self, relative_path: str):
         _loc_path = pathlib.PurePath(relative_path)
         loc_root_path = pathlib.Path(self.config.root_path)
-        remote_roott_path = pathlib.PurePath(self.config.remote_root_path)
+        remote_root_path = pathlib.PurePath(self.config.remote_root_path)
 
         def pull_dir(relative_loc_dir: pathlib.PurePath):
             _p = (loc_root_path/relative_loc_dir)
             if not _p.exists():
                 pprint(f'[info]mkdir {relative_loc_dir.as_posix()}')
                 _p.mkdir()
-            for file in _p.iterdir():
-                pull_file_or_dir(file.relative_to(loc_root_path))
+            remote_path = pathlib.PurePath(remote_root_path, relative_loc_dir)
+            files = self.sftp_client.listdir(remote_path.as_posix())
+            for file in files:
+                f_p = pathlib.PurePath(file)
+                pull_file_or_dir(relative_loc_dir/f_p)
 
         def pull_file(relative_loc_file: pathlib.PurePath):
             remote_path = pathlib.PurePath(
-                remote_roott_path, relative_loc_file)
+                remote_root_path, relative_loc_file)
+            loc_path = loc_root_path/relative_loc_file
             if not sftp_utils.exist_remote(remote_path.as_posix(), self.sftp_client):
                 pprint(
                     f'[warning]{relative_loc_file.as_posix()} does not exist on remote server')
                 return
-            pprint(f'[info]pulling {relative_loc_file.as_posix()}')
-            self.sftp_client.get(remote_path.as_posix(),
-                                 (loc_root_path/relative_loc_file).as_posix())
+
+            if sftp_utils.rfile_equal_lfile(remote_path.as_posix(), loc_path.as_posix(), self.ssh_client):
+                pprint(
+                    f'[warning]{relative_loc_file.as_posix()} has no change, skip')
+                return
+            with progress.Progress() as pross:
+                task = pross.add_task(
+                    f'[green]pulling [yellow]{relative_loc_file}')
+
+                def task_pross(nowhave: int, allbyte: int):
+                    pross.update(task, completed=nowhave/allbyte*100)
+                self.sftp_client.get(remote_path.as_posix(),
+                                     loc_path.as_posix(), task_pross)
 
         def pull_file_or_dir(relative_path: pathlib.PurePath):
             remote_path = pathlib.PurePath(
-                remote_roott_path, relative_path)
+                remote_root_path, relative_path)
             try:
                 stat = self.sftp_client.stat(remote_path.as_posix())
             except FileNotFoundError:

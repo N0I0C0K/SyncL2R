@@ -28,13 +28,15 @@ def push(config: str = typer.Option('./l2r_config.json', help='config file path,
     sftp_client.close()
 
 
-@app.command()
-def pull(files: list[str], config: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json')):
+@app.command(name='pull')
+def pull(files: list[str] = typer.Argument(default=None, help='files to pull, default to hole file'),
+         config: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json')):
     connect_config = ConnectConfig(config_path=config)
     connection = Connection(connect_config)
     sync_config = SyncConfig(config)
     sftp_client = connection.ssh_client.open_sftp()
     sync_task = SyncTask(connection.ssh_client, sftp_client, sync_config)
+    files = ['.'] if files is None or len(files) == 0 else files
     for file in files:
         sync_task.pull(file)
 
@@ -97,6 +99,10 @@ def show_files(config_path: str = typer.Option('./l2r_config.json', help='config
 
 @ app.command(name='test')
 def test_func():
+    connect_config = ConnectConfig(config_path='./l2r_config.json')
+    connection = Connection(connect_config)
+    sftp = connection.ssh_client.open_sftp()
+    pprint(sftp.listdir('/home/test'))
     pass
 
 
