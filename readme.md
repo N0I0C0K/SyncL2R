@@ -22,11 +22,22 @@ for more help, type
 | pull    | pull remote file               |
 | init    | init l2r_config.json           |
 
+### Push
+
+**Usage**
+`syncl2r push`
+![Alt text](./imgs/push.gif)
+
+### Pull
+
+**Usage**
+`syncl2r pull`
+![Alt text](./imgs/pull.gif)
+
 ## install
 
 **Run**
 `python setup.py install`
-
 **require**
 
 ```
