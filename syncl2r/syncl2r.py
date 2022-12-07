@@ -5,7 +5,7 @@ import re
 import typer
 
 from connect_core import ConnectConfig, Connection
-from console import pprint
+from console import pprint, console
 from sync_core import SyncConfig, SyncMode, SyncTask
 
 app = typer.Typer()
@@ -21,6 +21,7 @@ def push(config: str = typer.Option('./l2r_config.json', help='config file path,
     connect_config = ConnectConfig(config_path=config)
     connection = Connection(connect_config)
     sync_config = SyncConfig(config)
+    sync_config.exclude.append(config)
     sync_config.sync_mode = SyncMode(mode)
     sftp_client = connection.ssh_client.open_sftp()
     sync_task = SyncTask(connection.ssh_client, sftp_client, sync_config)
@@ -91,19 +92,48 @@ def init(remote_url: str = typer.Argument(
 
 
 @app.command(name='show')
-def show_files(config_path: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json')):
-    sync_config = SyncConfig(config_path)
+def show_files(config: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json')):
+    sync_config = SyncConfig(config)
     sync_task = SyncTask(None, None, sync_config)  # type: ignore #ignore
     sync_task.show_sync_file_tree()
 
 
-@ app.command(name='test')
+@app.command(name='test')
 def test_func():
     connect_config = ConnectConfig(config_path='./l2r_config.json')
     connection = Connection(connect_config)
     sftp = connection.ssh_client.open_sftp()
     pprint(sftp.listdir('/home/test'))
     pass
+
+
+@app.command(name='shell')
+def link_shell(config: str = typer.Option('./l2r_config.json', help='config file path, default to ./l2r_config.json')):
+    import time
+    connect_config = ConnectConfig(config_path=config)
+    connection = Connection(connect_config)
+    ssh_client = connection.ssh_client
+    user_cmd = ''
+    channel = ssh_client.invoke_shell()
+    time.sleep(0.1)
+    while not channel.recv_ready():
+        pass
+    pprint(channel.recv(1000).decode())
+    start = '>'
+    while user_cmd != 'exit\n':
+        while channel.recv_ready():
+            channel.recv(1024)
+        user_cmd = input(start)
+        user_cmd = user_cmd+'\n'
+        channel.send(user_cmd.encode())
+        stdout = bytes()
+        time.sleep(0.05)
+        while channel.recv_ready():
+            stdout += channel.recv(1024)
+        stdout_decoded = stdout.decode()
+        stdouts = stdout_decoded.split('\n')
+        pprint('\n'.join(stdouts[1:-1]))
+        start = stdouts[-1]
 
 
 def main():

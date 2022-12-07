@@ -11,7 +11,7 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "justMyCode": true,
-      "args": ["pull", "."],
+      "args": ["shell"],
       "cwd": "${workspaceFolder}/test"
     }
   ]

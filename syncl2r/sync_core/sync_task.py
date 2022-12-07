@@ -85,7 +85,7 @@ class SyncTask:
 
         if self.config.sync_mode == SyncMode.force:
             del_p = (_remote_path/'*').as_posix()
-            if sftp_utils.exist_remote(del_p, self.sftp_client):
+            if sftp_utils.exist_remote(_remote_path.as_posix(), self.sftp_client):
                 self.ssh_client.exec_command(f'rm -r {del_p}')
                 pprint(f'[danger.high]del remote folder [yellow2]({del_p})')
         if _path.is_dir():
