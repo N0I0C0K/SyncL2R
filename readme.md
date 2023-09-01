@@ -1,38 +1,26 @@
 # SyncL2R
 
-[中文](./readme_cn.md)
+同步本地文件夹和远程主机的文件夹内容
 
-Synchronize folder contents of local folders and remote hosts
-
-- You can choose to synchronize files
-- Support regular expression matching
-- Manually synchronize files, pull file from remote
-- Automatic synchronization can be set(background task require)
-- Automatic synchronization of monitored folder changes can be set(background task require)
-- Beautiful terminal output
+- 您可以选择同步文件
+- 支持正则表达式匹配
+- 手动同步文件，从远程提取文件
+- 可以设置自动同步（需要后台任务）
+- 可以设置受监视文件夹更改的自动同步（需要后台任务）
+- 漂亮的终端输出
 
 ## Command
 
-for more help, type
+查看更多帮助
 `syncl2r --help`
-
-| command | doc                            | usage |
+命令列表
+| command | doc | usage |
 | ------- | ------------------------------ | ----- |
-| push    | sync local file to remote host |
-| pull    | pull remote file               |
-| init    | init l2r_config.json           |
+| push | sync local file to remote host |
+| pull | pull remote file |
+| init | init l2r_config.json |
 
 ### Push
-
-push local file to the remote host.
-
-#### Push Mode
-
-| mode     | doc                                            |
-| -------- | ---------------------------------------------- |
-| 1:force  | will del remote upload path, then upload files |
-| 2:normal | will only upload changed file                  |
-| 3:soft   | will only uplaod new file                      |
 
 **Usage**
 `syncl2r push`
@@ -40,34 +28,14 @@ push local file to the remote host.
 
 ### Pull
 
-pull files from remote host. default to all files.
 **Usage**
-`syncl2r pull [files]`
+`syncl2r pull`
 ![Alt text](./imgs/pull.gif)
-
-## Config File
-
-```json
-{
-  "connect_config": {
-    "ip": "", // remote ip address
-    "port": 22, // ssh port
-    "username": "username", // remote ssh username
-    "password": "password" // password
-  },
-  "file_sync_config": {
-    "root_path": "./test", //folder to sync
-    "remote_root_path": "/home/test11", // Synchronize to remote folder.(This folder will be created if it does not exist)
-    "exclude": ["*.txt", ".gitignore"] //files to ignore
-  }
-}
-```
 
 ## install
 
-```
-python setup.py install
-```
+**安装**
+`python setup.py install`
 
 **require**
 

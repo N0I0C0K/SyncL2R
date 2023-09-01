@@ -13,8 +13,8 @@ class Connection:
         try:
             self.ssh_client.connect(connect_config.ip,
                                     connect_config.port,
-                                    connect_config. username,
-                                    connect_config. password,
+                                    connect_config.username,
+                                    connect_config.password,
                                     timeout=5)
         except TimeoutError:
             pprint(
