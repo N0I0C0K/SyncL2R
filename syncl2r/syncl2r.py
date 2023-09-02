@@ -1,4 +1,3 @@
-import json
 import os
 import re
 
@@ -6,7 +5,7 @@ import typer
 import pathlib
 
 from config import load_config
-from console import pprint, console
+from console import pprint
 from connect_core import Connection
 from sync_core import SyncTask, SyncMode
 
@@ -23,12 +22,15 @@ def push(
         help="sync mode 1:force(del then upload) 2:normal 3:soft(upload only new files)",
     ),
 ):
-    load_config(pathlib.Path(config))
-    connection = Connection()
-    sftp_client = connection.ssh_client.open_sftp()
-    sync_task = SyncTask(connection.ssh_client, sftp_client)
-    sync_task.push(mode=SyncMode(mode))
-    sftp_client.close()
+    try:
+        load_config(pathlib.Path(config))
+        connection = Connection()
+        sftp_client = connection.ssh_client.open_sftp()
+        sync_task = SyncTask(connection.ssh_client, sftp_client)
+        sync_task.push(mode=SyncMode(mode))
+        sftp_client.close()
+    except Exception as e:
+        pprint(f"\n[danger]err happen in command push, error info: {e}")
 
 
 @app.command(name="pull")
@@ -40,13 +42,16 @@ def pull(
         "./l2r_config.yaml", help="config file path, default to ./l2r_config.yaml"
     ),
 ):
-    load_config(pathlib.Path(config))
-    connection = Connection()
-    sftp_client = connection.ssh_client.open_sftp()
-    sync_task = SyncTask(connection.ssh_client, sftp_client)
-    files = ["."] if files is None or len(files) == 0 else files
-    for file in files:
-        sync_task.pull(file)
+    try:
+        load_config(pathlib.Path(config))
+        connection = Connection()
+        sftp_client = connection.ssh_client.open_sftp()
+        sync_task = SyncTask(connection.ssh_client, sftp_client)
+        files = ["."] if files is None or len(files) == 0 else files
+        for file in files:
+            sync_task.pull(file)
+    except Exception as e:
+        pprint(f"\n[danger]err happen in command pull, error info: {e}")
 
 
 @app.command(name="init")
@@ -57,10 +62,16 @@ def init(
     ),
     remote_path: str = typer.Option(default="", help="remote path to sync"),
     config_name: str = typer.Option(
-        default="config", help="file name to the config name => l2r_config_name.json"
+        default="config", help="file name to the config name => l2r_config_name.yaml"
     ),
     test_connect: bool = typer.Option(default=False, help="test connect to the host"),
 ):
+    conifg_file = os.path.abspath(f"./l2r_{config_name}.yaml")
+    if os.path.exists(conifg_file):
+        replace = typer.confirm(f"{conifg_file} already exist, do you want to replace?")
+        if not replace:
+            raise typer.Abort()
+
     sync_dir = "."
     if not os.path.exists(sync_dir):
         pprint(f"[red]{sync_dir} does not exist")
@@ -92,13 +103,14 @@ def init(
     if test_connect:
         try:
             conn = Connection()
-        except:
+        except Exception as e:
             pprint(
-                f"[danger.high]exception happend during connecting to the host {remote_url}"
+                f"[danger.high]exception happend during connecting to the host {remote_url}, error info: {e}"
             )
             return
+        else:
+            conn.close()
 
-    conifg_file = f"./l2r_{config_name}.yaml"
     if os.path.exists(conifg_file):
         pprint(f"[red]{conifg_file} already exist! now relpace")
     with open(conifg_file, "w+", encoding="utf-8") as file:

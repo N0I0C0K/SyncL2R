@@ -27,7 +27,7 @@ class SyncTask:
 
     def push(self, mode: SyncMode):
         self.show_sync_file_tree()
-        upload_file_nums, make_dir_nums = self.upload(
+        upload_file_nums, _ = self.upload(
             self.config.root_path, self.config.remote_root_path, mode=mode
         )
         pprint(f"[green]upload complete [red]{upload_file_nums}[/] file upload")

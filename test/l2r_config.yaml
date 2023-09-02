@@ -1,0 +1,9 @@
+connect_config:
+  ip: 127.0.0.1
+  password: 'test123'
+  port: 11022
+  username: root
+file_sync_config:
+  exclude: []
+  remote_root_path: '/home/test'
+  root_path: .
