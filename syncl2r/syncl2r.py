@@ -148,8 +148,13 @@ def link_shell(
     import time
 
     load_config(pathlib.Path(config))
-    connection = Connection()
-    ssh_client = connection.ssh_client
+    try:
+        connection = Connection()
+        ssh_client = connection.ssh_client
+    except Exception as e:
+        pprint(f"[danger]connect to remote failed, error info: {e}")
+        return
+
     user_cmd = ""
     channel = ssh_client.invoke_shell()
     time.sleep(0.1)
