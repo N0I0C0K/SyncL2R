@@ -12,7 +12,7 @@ from sync_core import SyncTask, SyncMode
 app = typer.Typer()
 
 
-@app.command(name="push")
+@app.command(name="push", help="push file to remote")
 def push(
     config: str = typer.Option(
         "./l2r_config.yaml", help="config file path, default to ./l2r_config.yaml"
@@ -33,7 +33,7 @@ def push(
         pprint(f"\n[danger]err happen in command push, error info: {e}")
 
 
-@app.command(name="pull")
+@app.command(name="pull", help="pull files from remote")
 def pull(
     files: list[str] = typer.Argument(
         default=None, help="files to pull, default to hole file"
@@ -54,7 +54,7 @@ def pull(
         pprint(f"\n[danger]err happen in command pull, error info: {e}")
 
 
-@app.command(name="init")
+@app.command(name="init", help="init config file for current path")
 def init(
     remote_url: str = typer.Argument(
         ...,
@@ -62,9 +62,13 @@ def init(
     ),
     remote_path: str = typer.Option(default="", help="remote path to sync"),
     config_name: str = typer.Option(
-        default="config", help="file name to the config name => l2r_config_name.yaml"
+        default="config",
+        help="custom file name for the config name => l2r_config_name.yaml",
     ),
-    test_connect: bool = typer.Option(default=False, help="test connect to the host"),
+    test_connect: bool = typer.Option(
+        default=False,
+        help="test connection before write config file, Used to check whether the connection configuration is correct",
+    ),
 ):
     conifg_file = os.path.abspath(f"./l2r_{config_name}.yaml")
     if os.path.exists(conifg_file):
@@ -124,7 +128,7 @@ def init(
         yaml.dump(init_data, file, Dumper)
 
 
-@app.command(name="show")
+@app.command(name="show", help="show file struct for the current sync file")
 def show_files(
     config: str = typer.Option(
         "./l2r_config.yaml", help="config file path, default to ./l2r_config.yaml"
@@ -135,7 +139,7 @@ def show_files(
     sync_task.show_sync_file_tree()
 
 
-@app.command(name="shell")
+@app.command(name="shell", help="open shell to remote")
 def link_shell(
     config: str = typer.Option(
         "./l2r_config.yaml", help="config file path, default to ./l2r_config.yaml"
