@@ -30,9 +30,15 @@ class FileSyncConfig(BaseModel):
         self.root_path = os.path.abspath(self.root_path)
 
 
+class EventConfig(BaseModel):
+    push_complete_exec: list[str] | None = None
+    push_start_exec: list[str] | None = None
+
+
 class GlobalConfig(BaseModel):
     connect_config: ConnectConfig
     file_sync_config: FileSyncConfig
+    events: EventConfig | None = None
 
 
 global_config: GlobalConfig | None = None

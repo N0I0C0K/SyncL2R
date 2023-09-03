@@ -1,6 +1,8 @@
 import paramiko
 import pathlib
 import enum
+
+from connect_core import Connection
 from utils import sftp_utils, utils
 from console import pprint
 from rich import padding, progress
@@ -16,13 +18,13 @@ class SyncMode(enum.IntEnum):
 class SyncTask:
     def __init__(
         self,
-        ssh_client: paramiko.SSHClient,
-        sftp_client: paramiko.SFTPClient,
+        connection: Connection,
         *,
         config: FileSyncConfig | None = None,
     ) -> None:
-        self.ssh_client = ssh_client
-        self.sftp_client = sftp_client
+        self.ssh_client = connection.ssh_client
+        self.sftp_client = connection.sftp_client
+
         self.config = get_global_config().file_sync_config if config is None else config
 
     def push(self, mode: SyncMode):

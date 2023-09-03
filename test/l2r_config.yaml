@@ -7,3 +7,12 @@ file_sync_config:
   exclude: []
   remote_root_path: '/home/test'
   root_path: .
+events:
+  push_complete_exec:
+    - ls
+    - pwd
+  push_start_exec:
+    - echo hello world
+    - cd /home/test
+    - ls
+    - pwd

@@ -4,6 +4,7 @@ import re
 import typer
 import pathlib
 
+from utils.utils import show_sync_file_tree
 from config import load_config
 from console import pprint
 from connect_core import Connection
@@ -21,14 +22,15 @@ def push(
         2,
         help="sync mode 1:force(del then upload) 2:normal 3:soft(upload only new files)",
     ),
+    invoke_event: bool = typer.Option(True, help="weather invoke events"),
 ):
     try:
         load_config(pathlib.Path(config))
         connection = Connection()
-        sftp_client = connection.ssh_client.open_sftp()
-        sync_task = SyncTask(connection.ssh_client, sftp_client)
+        sync_task = SyncTask(connection)
+        # invoke push start events
+
         sync_task.push(mode=SyncMode(mode))
-        sftp_client.close()
     except Exception as e:
         pprint(f"\n[danger]err happen in command push, error info: {e}")
 
@@ -45,8 +47,7 @@ def pull(
     try:
         load_config(pathlib.Path(config))
         connection = Connection()
-        sftp_client = connection.ssh_client.open_sftp()
-        sync_task = SyncTask(connection.ssh_client, sftp_client)
+        sync_task = SyncTask(connection)
         files = ["."] if files is None or len(files) == 0 else files
         for file in files:
             sync_task.pull(file)
@@ -134,9 +135,8 @@ def show_files(
         "./l2r_config.yaml", help="config file path, default to ./l2r_config.yaml"
     )
 ):
-    load_config(pathlib.Path(config))
-    sync_task = SyncTask(None, None)  # type: ignore #ignore
-    sync_task.show_sync_file_tree()
+    global_config = load_config(pathlib.Path(config))
+    show_sync_file_tree(global_config.file_sync_config)
 
 
 @app.command(name="shell", help="open shell to remote")
@@ -163,19 +163,25 @@ def link_shell(
     pprint(channel.recv(1000).decode())
     start = ">"
     while user_cmd != "exit\n":
-        while channel.recv_ready():
-            channel.recv(1024)
         user_cmd = input(start)
         user_cmd = user_cmd + "\n"
         channel.send(user_cmd.encode())
         stdout = bytes()
-        time.sleep(0.05)
+        while not channel.recv_ready():
+            time.sleep(0.1)
         while channel.recv_ready():
             stdout += channel.recv(1024)
         stdout_decoded = stdout.decode()
         stdouts = stdout_decoded.split("\n")
         pprint("\n".join(stdouts[1:-1]))
         start = stdouts[-1]
+
+
+@app.command()
+def test():
+    config = load_config(pathlib.Path("./l2r_config.yaml"))
+    conn = Connection()
+    conn.invoke_cmd_list(config.events.push_start_exec)
 
 
 __all__ = ["main"]

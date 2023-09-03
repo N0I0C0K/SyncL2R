@@ -1,6 +1,6 @@
 import paramiko
 from console import console, pprint
-from config import GlobalConfig, get_global_config, ConnectConfig
+from config import get_global_config, ConnectConfig
 
 
 class Connection:
@@ -31,9 +31,38 @@ class Connection:
         else:
             console.print("[green]success")
         self.exec_command = self.ssh_client.exec_command
+        self.__sftp_client: paramiko.SFTPClient | None = None
+
+    @property
+    def sftp_client(self) -> paramiko.SFTPClient:
+        if self.__sftp_client is None:
+            self.__sftp_client = self.ssh_client.open_sftp()
+        return self.__sftp_client
 
     def __del__(self):
         self.ssh_client.close()
+        if self.__sftp_client is not None:
+            self.__sftp_client.close()
         console.print(
             f"[green bold]connection[red]({self.config.ip}:{self.config.port}@{self.config.username})[/] close[/] "
         )
+
+    def invoke_cmd_list(self, cmd_list: list[str]):
+        for cmd in cmd_list:
+            pprint(f"[info]invoke command => {cmd}")
+            channel.exec_command(cmd)
+            pprint(channel.)
+
+
+# global_connection: Connection | None = None
+
+
+# def set_global_connection(connection: Connection):
+#     global global_connection
+#     global_connection = connection
+
+
+# def get_connection() -> Connection:
+#     if global_connection is None:
+#         raise ValueError("global connection is not init")
+#     return global_connection
