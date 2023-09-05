@@ -48,10 +48,13 @@ class Connection:
         )
 
     def invoke_cmd_list(self, cmd_list: list[str]):
+        cmd_encode_list = []
         for cmd in cmd_list:
-            pprint(f"[info]invoke command => {cmd}")
-            channel.exec_command(cmd)
-            pprint(channel.)
+            cmd_encode_list.append(f'echo "[*]{cmd} start execute"')
+            cmd_encode_list.append(cmd)
+        cmd_res = ";".join(cmd_encode_list)
+        stdin, stdout, stderr = self.ssh_client.exec_command(cmd_res)
+        pprint(stdout.read())
 
 
 # global_connection: Connection | None = None
