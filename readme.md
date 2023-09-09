@@ -63,6 +63,8 @@ Syncl2r支持事件触发，用来执行shell命令，目前支持以下事件�
 
 ## Config
 
+config文件名称默认为`config.l2r.yaml`，**如果命令中不指定config会默认寻找当前目录下第一个满足`*.l2r.yaml`的文件**
+
 ```yaml
 connect_config:
   ip: 127.0.0.1                   # 远程主机ip

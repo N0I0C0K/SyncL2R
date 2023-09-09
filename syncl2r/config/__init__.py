@@ -1,7 +1,9 @@
-from pydantic import BaseModel
 import pathlib
 import json
 import os
+
+from console import pprint
+from pydantic import BaseModel
 
 
 class ConnectConfig(BaseModel):
@@ -44,26 +46,36 @@ class GlobalConfig(BaseModel):
 global_config: GlobalConfig | None = None
 
 
-def load_config(config_path_or_obj: pathlib.Path | dict) -> GlobalConfig:
+def load_config(
+    config_path_or_obj: pathlib.Path | dict | str | None = None,
+) -> GlobalConfig:
     if isinstance(config_path_or_obj, dict):
         modal = GlobalConfig.parse_obj(config_path_or_obj)
         set_global_config(modal)
         return modal
-    if config_path_or_obj.suffix == ".yaml":
-        import yaml
+    if config_path_or_obj is None:
+        for file_name in os.listdir():
+            if file_name.count(".l2r"):
+                pprint(f"[info]use config file [red]{file_name}")
+                config_path_or_obj = pathlib.Path(os.path.abspath(file_name))
+    if isinstance(config_path_or_obj, str):
+        config_path_or_obj = pathlib.Path(os.path.abspath(config_path_or_obj))
+    if isinstance(config_path_or_obj, pathlib.Path):
+        if config_path_or_obj.suffix == ".yaml":
+            import yaml
 
-        try:
-            from yaml import CLoader as Loader
-        except ImportError:
-            from yaml import Loader
-        obj = yaml.load(config_path_or_obj.read_text(), Loader)
-        return set_global_config(GlobalConfig.parse_obj(obj))
-    elif config_path_or_obj.suffix == ".json":
-        obj = json.loads(config_path_or_obj.read_text())
-        modal = GlobalConfig.parse_obj(obj)
-        set_global_config(modal)
-        return modal
-    raise ValueError("config file type is not support")
+            try:
+                from yaml import CLoader as Loader
+            except ImportError:
+                from yaml import Loader
+            obj = yaml.load(config_path_or_obj.read_text(), Loader)
+            return set_global_config(GlobalConfig.parse_obj(obj))
+        elif config_path_or_obj.suffix == ".json":
+            obj = json.loads(config_path_or_obj.read_text())
+            modal = GlobalConfig.parse_obj(obj)
+            set_global_config(modal)
+            return modal
+    raise ValueError("config is not find")
 
 
 def set_global_config(config: GlobalConfig) -> GlobalConfig:

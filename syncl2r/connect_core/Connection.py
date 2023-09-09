@@ -73,7 +73,7 @@ class Connection:
             if line.startswith("sdif92ja0lfas"):
                 break
             pprint(line, end="")
-        pprint(f"all command exec finished, use {time.time() - start_time} seconds")
+        pprint(f"all command exec finished, use {time.time() - start_time:.2f} seconds")
 
 
 # global_connection: Connection | None = None

@@ -16,7 +16,7 @@ app = typer.Typer()
 @app.command(name="push", help="push file to remote")
 def push(
     config: str = typer.Option(
-        "./l2r_config.yaml", help="config file path, default to ./l2r_config.yaml"
+        None, help="config file path, default find one match ./*.l2r.yaml"
     ),
     mode: int = typer.Option(
         2,
@@ -25,7 +25,7 @@ def push(
     invoke_event: bool = typer.Option(True, help="weather invoke events"),
 ):
     try:
-        config_modal = load_config(pathlib.Path(config))
+        config_modal = load_config(config)
         connection = Connection()
         sync_task = SyncTask(connection)
 
@@ -65,11 +65,11 @@ def pull(
         default=None, help="files to pull, default to hole file"
     ),
     config: str = typer.Option(
-        "./l2r_config.yaml", help="config file path, default to ./l2r_config.yaml"
+        None, help="config file path, default find one match ./*.l2r.yaml"
     ),
 ):
     try:
-        load_config(pathlib.Path(config))
+        load_config(config)
         connection = Connection()
         sync_task = SyncTask(connection)
         files = ["."] if files is None or len(files) == 0 else files
@@ -88,14 +88,14 @@ def init(
     remote_path: str = typer.Option(default="", help="remote path to sync"),
     config_name: str = typer.Option(
         default="config",
-        help="custom file name for the config name => l2r_config_name.yaml",
+        help="custom file name for the config name => config.l2r.yaml",
     ),
     test_connect: bool = typer.Option(
         default=False,
         help="test connection before write config file, Used to check whether the connection configuration is correct",
     ),
 ):
-    conifg_file = os.path.abspath(f"./l2r_{config_name}.yaml")
+    conifg_file = os.path.abspath(f"./{config_name}.l2r.yaml")
     if os.path.exists(conifg_file):
         replace = typer.confirm(f"{conifg_file} already exist, do you want to replace?")
         if not replace:
@@ -154,11 +154,7 @@ def init(
 
 
 @app.command(name="show", help="show file struct for the current sync file")
-def show_files(
-    config: str = typer.Option(
-        "./l2r_config.yaml", help="config file path, default to ./l2r_config.yaml"
-    )
-):
+def show_files(config: str = typer.Option(None, help="c")):
     global_config = load_config(pathlib.Path(config))
     show_sync_file_tree(global_config.file_sync_config)
 
@@ -166,7 +162,7 @@ def show_files(
 @app.command(name="shell", help="open shell to remote")
 def link_shell(
     config: str = typer.Option(
-        "./l2r_config.yaml", help="config file path, default to ./l2r_config.yaml"
+        None, help="config file path, default find one match ./*.l2r.yaml"
     )
 ):
     import time
@@ -203,7 +199,7 @@ def link_shell(
 
 @app.command()
 def test():
-    config = load_config(pathlib.Path("./l2r_config.yaml"))
+    config = load_config()
     conn = Connection()
     conn.exec_cmd_list(
         config.events.push_start_exec, config.file_sync_config.remote_root_path  # type: ignore
