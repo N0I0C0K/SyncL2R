@@ -1,6 +1,7 @@
 import paramiko
 from console import console, pprint
 from config import get_global_config, ConnectConfig
+from shlex import quote
 
 
 class Connection:
@@ -47,14 +48,32 @@ class Connection:
             f"[green bold]connection[red]({self.config.ip}:{self.config.port}@{self.config.username})[/] close[/] "
         )
 
-    def invoke_cmd_list(self, cmd_list: list[str]):
-        cmd_encode_list = []
+    def exec_cmd_list(self, cmd_list: list[str], pwd: str | None = None):
+        import time
+
+        cmd_encode_list: list[str] = []
+
+        if pwd:
+            cmd_encode_list.append(f"cd {quote(pwd)}")
+
+        cmd_encode_list.append('echo "Your current remote path:"')
+        cmd_encode_list.append("pwd")
         for cmd in cmd_list:
-            cmd_encode_list.append(f'echo "[*]{cmd} start execute"')
+            cmd_encode_list.append(f"echo '[green][*]\"{quote(cmd)}\" start execute'")
             cmd_encode_list.append(cmd)
+        cmd_encode_list.append("echo sdif92ja0lfas")
         cmd_res = ";".join(cmd_encode_list)
+
+        start_time = time.time()
         stdin, stdout, stderr = self.ssh_client.exec_command(cmd_res)
-        pprint(stdout.read())
+        while stdout.readable():
+            line: str = stdout.readline()
+            if len(line) == 0:
+                continue
+            if line.startswith("sdif92ja0lfas"):
+                break
+            pprint(line, end="")
+        pprint(f"all command exec finished, use {time.time() - start_time} seconds")
 
 
 # global_connection: Connection | None = None

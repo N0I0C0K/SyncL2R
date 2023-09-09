@@ -9,10 +9,8 @@ file_sync_config:
   root_path: .
 events:
   push_complete_exec:
-    - ls
     - pwd
   push_start_exec:
     - echo hello world
-    - cd /home/test
-    - ls
+    - sleep 1
     - pwd

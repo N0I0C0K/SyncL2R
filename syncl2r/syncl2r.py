@@ -25,12 +25,36 @@ def push(
     invoke_event: bool = typer.Option(True, help="weather invoke events"),
 ):
     try:
-        load_config(pathlib.Path(config))
+        config_modal = load_config(pathlib.Path(config))
         connection = Connection()
         sync_task = SyncTask(connection)
-        # invoke push start events
+
+        if (
+            invoke_event
+            and config_modal.events is not None
+            and config_modal.events.push_start_exec is not None
+        ):
+            # invoke push start events
+            pprint("[yellow]start exec start events")
+            connection.exec_cmd_list(
+                config_modal.events.push_start_exec,
+                config_modal.file_sync_config.remote_root_path,
+            )
 
         sync_task.push(mode=SyncMode(mode))
+
+        if (
+            invoke_event
+            and config_modal.events is not None
+            and config_modal.events.push_complete_exec is not None
+        ):
+            # invoke push finissh events
+            pprint("[yellow]start exec finish events")
+            connection.exec_cmd_list(
+                config_modal.events.push_complete_exec,
+                config_modal.file_sync_config.remote_root_path,
+            )
+
     except Exception as e:
         pprint(f"\n[danger]err happen in command push, error info: {e}")
 
@@ -181,7 +205,9 @@ def link_shell(
 def test():
     config = load_config(pathlib.Path("./l2r_config.yaml"))
     conn = Connection()
-    conn.invoke_cmd_list(config.events.push_start_exec)
+    conn.exec_cmd_list(
+        config.events.push_start_exec, config.file_sync_config.remote_root_path  # type: ignore
+    )
 
 
 __all__ = ["main"]
