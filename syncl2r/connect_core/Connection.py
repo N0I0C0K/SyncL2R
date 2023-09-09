@@ -1,6 +1,6 @@
 import paramiko
-from console import console, pprint
-from config import get_global_config, ConnectConfig
+from ..console import console, pprint
+from ..config import get_global_config, ConnectConfig
 from shlex import quote
 
 

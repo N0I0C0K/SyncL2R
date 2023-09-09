@@ -87,7 +87,7 @@ events:                           # 事件只要填写默认每次都会执行�
 ## install
 
 ```shell
-python setup.py install
+python -m pip install .
 ```
 
 **require**

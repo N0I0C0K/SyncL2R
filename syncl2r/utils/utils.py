@@ -2,13 +2,13 @@ import os
 import pathlib
 import typing
 from shlex import quote
-from console import pprint
 from rich.filesize import decimal
 from rich.markup import escape
 from rich.text import Text
 from rich.tree import Tree
 from rich.padding import Padding
-from config import FileSyncConfig
+from ..console import pprint
+from ..config import FileSyncConfig
 
 
 def walk_directory(

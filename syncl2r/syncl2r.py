@@ -4,11 +4,11 @@ import re
 import typer
 import pathlib
 
-from utils.utils import show_sync_file_tree
-from config import load_config
-from console import pprint
-from connect_core import Connection
-from sync_core import SyncTask, SyncMode
+from .utils.utils import show_sync_file_tree
+from .config import load_config
+from .console import pprint
+from .connect_core import Connection
+from .sync_core import SyncTask, SyncMode
 
 app = typer.Typer()
 

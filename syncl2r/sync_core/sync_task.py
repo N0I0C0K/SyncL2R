@@ -2,11 +2,11 @@ import paramiko
 import pathlib
 import enum
 
-from connect_core import Connection
-from utils import sftp_utils, utils
-from console import pprint
+from ..connect_core import Connection
+from ..utils import sftp_utils, utils
+from ..console import pprint
 from rich import padding, progress
-from config import get_global_config, FileSyncConfig
+from ..config import get_global_config, FileSyncConfig
 
 
 class SyncMode(enum.IntEnum):

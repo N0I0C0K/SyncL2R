@@ -2,7 +2,7 @@ import pathlib
 import json
 import os
 
-from console import pprint
+from ..console import pprint
 from pydantic import BaseModel
 
 

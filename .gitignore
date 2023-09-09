@@ -1,3 +1,6 @@
 **/__pycache__
 .vscode
 **/*.local.*
+build
+dist
+*egg*
