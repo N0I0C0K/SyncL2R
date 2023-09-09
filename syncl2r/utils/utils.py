@@ -1,6 +1,7 @@
 import os
 import pathlib
 import typing
+from shlex import quote
 from console import pprint
 from rich.filesize import decimal
 from rich.markup import escape
@@ -75,11 +76,11 @@ def get_file_md5(path: str) -> str | None:
         return None
     match os.name:
         case "nt":
-            res = os.popen(f"certutil -hashfile {path} md5")
+            res = os.popen(f'certutil -hashfile "{path}" md5')
             mds = res.read().split("\n")[1]
             return mds
         case "posix":
-            res = os.popen(f"md5sum {path}")
+            res = os.popen(f"md5sum {quote(path)}")
             return res.read()
 
 
