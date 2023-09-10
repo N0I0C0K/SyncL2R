@@ -85,7 +85,10 @@ def init(
         ...,
         help="the link to the remote ssh host. like => username:password@ip or username:password@ip:port",
     ),
-    remote_path: str = typer.Option(default="", help="remote path to sync"),
+    remote_path: str = typer.Option(
+        default=None, help="remote path to sync, default same as local dir name"
+    ),
+    sync_path: str = typer.Option(default=".", help="local path to sync"),
     config_name: str = typer.Option(
         default="config",
         help="custom file name for the config name => config.l2r.yaml",
@@ -101,10 +104,14 @@ def init(
         if not replace:
             raise typer.Abort()
 
-    sync_dir = "."
+    sync_dir = sync_path
+    sync_dir_name = os.path.split(os.path.abspath(sync_dir))[-1]
     if not os.path.exists(sync_dir):
         pprint(f"[red]{sync_dir} does not exist")
         return
+
+    if remote_path is None:
+        remote_path = f"{sync_dir_name}"
 
     res = re.match(r"(.*?):(.*?)@([0-9,\.]*):?([0-9]*)?", remote_url)
     if res is None:
@@ -166,35 +173,28 @@ def link_shell(
     )
 ):
     import time
+    import secrets
+    from .utils.ssh_utils import channel_recv
 
-    load_config(pathlib.Path(config))
+    load_config(config)
     try:
         connection = Connection()
         ssh_client = connection.ssh_client
     except Exception as e:
         pprint(f"[danger]connect to remote failed, error info: {e}")
         return
-
-    user_cmd = ""
     channel = ssh_client.invoke_shell()
     time.sleep(0.1)
     while not channel.recv_ready():
         pass
-    pprint(channel.recv(1000).decode())
-    start = ">"
-    while user_cmd != "exit\n":
-        user_cmd = input(start)
-        user_cmd = user_cmd + "\n"
-        channel.send(user_cmd.encode())
-        stdout = bytes()
-        while not channel.recv_ready():
-            time.sleep(0.1)
-        while channel.recv_ready():
-            stdout += channel.recv(1024)
-        stdout_decoded = stdout.decode()
-        stdouts = stdout_decoded.split("\n")
-        pprint("\n".join(stdouts[1:-1]))
-        start = stdouts[-1]
+
+    while True:
+        t = channel_recv(channel).decode()
+        print(t, end="")
+        cmd = input()
+        cmd += "\n"
+        channel.send(cmd.encode())
+        time.sleep(0.1)
 
 
 @app.command()
