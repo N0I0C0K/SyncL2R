@@ -11,6 +11,7 @@ class Connection:
         )
         self.ssh_client = paramiko.SSHClient()
         self.close = self.ssh_client.close
+
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         console.print(
             f"[info]start link to [underline red]{self.config.ip}:{self.config.port}@{self.config.username}",

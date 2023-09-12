@@ -1,8 +1,8 @@
 connect_config:
   ip: 127.0.0.1
-  password: 'test123'
-  port: 11022
   username: root
+  keyfile: local
+  port: 11022
 file_sync_config:
   exclude: []
   remote_root_path: '/home/test'
@@ -14,3 +14,9 @@ events:
     - echo hello world
     - sleep 1
     - pwd
+actions:
+  -
+    name: test
+    cmd:
+      - ls
+      - pwd
