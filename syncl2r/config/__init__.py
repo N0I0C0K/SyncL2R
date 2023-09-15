@@ -37,10 +37,15 @@ class EventConfig(BaseModel):
     push_start_exec: list[str] | None = None
 
 
+class ActionConfig(BaseModel):
+    cmd: list[str] | None
+
+
 class GlobalConfig(BaseModel):
     connect_config: ConnectConfig
     file_sync_config: FileSyncConfig
     events: EventConfig | None = None
+    actions: dict[str, ActionConfig] | None = None
 
 
 global_config: GlobalConfig | None = None

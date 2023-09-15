@@ -15,8 +15,7 @@ events:
     - sleep 1
     - pwd
 actions:
-  -
-    name: test
+  test:
     cmd:
       - ls
       - pwd

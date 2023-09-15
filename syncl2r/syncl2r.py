@@ -10,7 +10,9 @@ from .console import pprint
 from .connect_core import Connection
 from .sync_core import SyncTask, SyncMode
 
-app = typer.Typer()
+app = typer.Typer(
+    name="Syncl2r",
+)
 
 
 @app.command(name="push", help="push file to remote")
@@ -197,13 +199,29 @@ def link_shell(
         time.sleep(0.1)
 
 
+@app.command(name="exec", help="exec action")
+def exec_action(
+    action: str = typer.Argument(),
+    config: str = typer.Option(
+        None, help="config file path, default find one match ./*.l2r.yaml"
+    ),
+):
+    config_modal = load_config(config)
+    if config_modal.actions is None or action not in config_modal.actions:
+        pprint(f"[warn]can not find '{action}' in config.actions")
+        return
+    cmd_list = config_modal.actions[action].cmd
+    if cmd_list is None:
+        pprint("[warn]no cmd need to exec, now quit")
+        return
+    conn = Connection(config_modal.connect_config)
+    conn.exec_cmd_list(cmd_list)
+
+
 @app.command()
 def test():
     config = load_config()
-    conn = Connection()
-    conn.exec_cmd_list(
-        config.events.push_start_exec, config.file_sync_config.remote_root_path  # type: ignore
-    )
+    pprint(config)
 
 
 __all__ = ["main"]
