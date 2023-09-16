@@ -1,0 +1,16 @@
+FROM python:3.10.13-alpine
+
+WORKDIR /usr/home/test
+
+# RUN apt-get update && apt install -y openssh-server
+# RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+# RUN echo "root:test_root" | chpasswd
+
+RUN apk update && apk add openssh-server
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+RUN echo "root:test_root" | chpasswd
+
+COPY . .
+
+CMD /etc/init.d/ssh restart \
+    ; python ./run_forever.py

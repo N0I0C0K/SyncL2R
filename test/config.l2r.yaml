@@ -1,8 +1,8 @@
 connect_config:
   ip: 127.0.0.1
-  username: root
-  keyfile: local
+  password: 'test123'
   port: 11022
+  username: root
 file_sync_config:
   exclude: []
   remote_root_path: '/home/test'
@@ -16,6 +16,7 @@ events:
     - pwd
 actions:
   test:
+    description: this is a test action / 这是一个测试action，主要实现了展示当前目录文件，显示当前目录
     cmd:
       - ls
       - pwd

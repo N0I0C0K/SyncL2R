@@ -39,6 +39,7 @@ class EventConfig(BaseModel):
 
 class ActionConfig(BaseModel):
     cmd: list[str] | None
+    description: str = ""
 
 
 class GlobalConfig(BaseModel):
@@ -73,10 +74,10 @@ def load_config(
                 from yaml import CLoader as Loader
             except ImportError:
                 from yaml import Loader
-            obj = yaml.load(config_path_or_obj.read_text(), Loader)
+            obj = yaml.load(config_path_or_obj.read_text(encoding="utf-8"), Loader)
             return set_global_config(GlobalConfig.parse_obj(obj))
         elif config_path_or_obj.suffix == ".json":
-            obj = json.loads(config_path_or_obj.read_text())
+            obj = json.loads(config_path_or_obj.read_text(encoding="utf-8"))
             modal = GlobalConfig.parse_obj(obj)
             set_global_config(modal)
             return modal
