@@ -3,8 +3,12 @@ import enum
 import paramiko
 import typing
 import pathlib
+
 from shlex import quote
 from .utils import get_file_md5
+from rich.tree import Tree
+from rich.text import Text
+from rich.filesize import decimal
 
 
 class FileType(enum.IntFlag):
@@ -89,3 +93,52 @@ def exist_remote(file_path: str, sftp_client: paramiko.SFTPClient) -> bool:
         return False
     else:
         return True
+
+
+def show_remote_file_tree(path: str, sftp: paramiko.SFTPClient):
+    from ..console import pprint
+    from rich.padding import Padding
+
+    pprint(
+        Padding(
+            get_remote_file_tree(path, sftp),
+            (0, 0, 0, 0),
+        )
+    )
+
+
+def walk_remote_directory(directory: str, tree: Tree, sftp: paramiko.SFTPClient):
+    paths = sorted(
+        sftp.listdir(directory),
+        key=lambda path: (path),
+    )
+
+    for filename in paths:
+        path = pathlib.PurePath(directory) / filename
+        stat = sftp.stat(path.as_posix())
+        if get_file_type(stat) == FileType.DIR:
+            style = ""  # "dim" if path.name.startswith("__") else ""
+            branch = tree.add(
+                f"[bold magenta]:open_file_folder: {path.name}",
+                style=style,
+                guide_style=style,
+            )
+            walk_remote_directory(path.as_posix(), branch, sftp)
+        else:
+            text_filename = Text(path.name, "green")
+            text_filename.highlight_regex(r"\..*$", "bold red")
+            file_size = stat.st_size if stat.st_size is not None else 0
+            text_filename.append(f" ({decimal(file_size)})", "blue")
+            icon = "📄 "
+            tree.add(Text(icon) + text_filename)
+
+
+def get_remote_file_tree(path: str, sftp: paramiko.SFTPClient):
+    if not exist_remote(path, sftp):
+        raise FileNotFoundError(f"remote path({path}) do not exist")
+    tree = Tree(
+        f":open_file_folder: [link file://{path}]{path}",
+        guide_style="bold bright_blue",
+    )
+    walk_remote_directory(path, tree, sftp)
+    return tree
