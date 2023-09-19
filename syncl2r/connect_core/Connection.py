@@ -15,7 +15,7 @@ class Connection:
 
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh_client.load_system_host_keys()
-
+        self.__sftp_client: paramiko.SFTPClient | None = None
         pprint(
             f"[info]start link to [underline red]{self.config.ip}:{self.config.port}@{self.config.username}",
             end=" ",
@@ -38,6 +38,8 @@ class Connection:
                 self.ssh_client.connect(
                     self.config.ip, self.config.port, self.config.username, pkey=pkey
                 )
+            else:
+                raise ValueError("connection config is invaild")
         except TimeoutError:
             pprint(
                 f"[danger.high]can not connect to the {self.config.ip}:{self.config.port}!"
@@ -46,7 +48,6 @@ class Connection:
         else:
             pprint("[green]success")
         self.exec_command = self.ssh_client.exec_command
-        self.__sftp_client: paramiko.SFTPClient | None = None
 
     @property
     def sftp_client(self) -> paramiko.SFTPClient:

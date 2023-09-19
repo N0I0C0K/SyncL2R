@@ -21,19 +21,24 @@ def walk_directory(
     # Sort dirs first then by filename
     paths = sorted(
         pathlib.Path(directory).iterdir(),
-        key=lambda path: (path.is_file(), path.name.lower()),
+        key=lambda path: (path.name.lower()),
     )
     for path in paths:
         if escape_func and escape_func(path):
             continue
         if path.is_dir():
             style = "dim" if path.name.startswith("__") else ""
-            branch = tree.add(
+            tre = Tree(
                 f"[bold magenta]:open_file_folder: [link {path.as_uri()}]{escape(path.name)}",
                 style=style,
-                guide_style=style,
+                guide_style=tree.guide_style,
+                expanded=tree.expanded,
+                highlight=tree.highlight,
             )
-            walk_directory(path, branch, escape_func=escape_func)
+            walk_directory(path, tre, escape_func=escape_func)
+            if len(tre.children) > 0:
+                tree.children.append(tre)
+
         else:
             text_filename = Text(path.name, "green")
             text_filename.highlight_regex(r"\..*$", "bold red")

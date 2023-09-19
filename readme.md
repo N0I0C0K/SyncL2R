@@ -96,7 +96,9 @@ connect_config:
   password: 'test123'             # 密码
   port: 11022                     # ssh端口，不填默认22
 file_sync_config:
-  exclude: ['*.config']           # 同步排除文件，支持正则匹配
+  exclude:                        # 同步排除文件，支持正则匹配
+    - *.config
+    - node_modules
   remote_root_path: '/home/test'  # 远程根路径
   root_path: .                    # 本地同步根路径
 events:                           # 事件只要填写默认每次都会执行（可以设置不执行）
