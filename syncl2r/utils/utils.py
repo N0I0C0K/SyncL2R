@@ -24,9 +24,6 @@ def walk_directory(
         key=lambda path: (path.is_file(), path.name.lower()),
     )
     for path in paths:
-        # Remove hidden files
-        if path.name.startswith("."):
-            continue
         if escape_func and escape_func(path):
             continue
         if path.is_dir():
@@ -59,12 +56,21 @@ def get_dir_tree(
     return tree
 
 
-def show_sync_file_tree(syncConfig: FileSyncConfig):
+def show_sync_file_tree(
+    syncConfig: FileSyncConfig, *escape_file: typing.Callable[[pathlib.Path], bool]
+):
     pprint("[red bold]file tree prepare to sync: ")
-    # TODO 此处应该对比本地和远程文件,将不同的文件进行标注
+
+    esc_func_list: list[typing.Callable[[pathlib.Path], bool]] = []
+    esc_func_list.append(syncConfig.escape_file)
+    esc_func_list.extend(escape_file)
+
+    def esc_func(path: pathlib.Path) -> bool:
+        return any(func(path) for func in esc_func_list)
+
     pprint(
         Padding(
-            get_dir_tree(syncConfig.root_path, syncConfig.escape_file),
+            get_dir_tree(syncConfig.root_path, esc_func),
             (0, 0, 0, 0),
         )
     )

@@ -28,7 +28,6 @@ class SyncTask:
         self.config = get_global_config().file_sync_config if config is None else config
 
     def push(self, mode: SyncMode):
-        self.show_sync_file_tree()
         upload_file_nums, _ = self.upload(
             self.config.root_path, self.config.remote_root_path, mode=mode
         )
@@ -36,7 +35,6 @@ class SyncTask:
 
     def show_sync_file_tree(self):
         pprint("[red bold]file tree prepare to sync: ")
-        # TODO 此处应该对比本地和远程文件,将不同的文件进行标注
         pprint(
             padding.Padding(
                 utils.get_dir_tree(self.config.root_path, self.config.escape_file),
