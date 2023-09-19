@@ -1,6 +1,7 @@
 import sys
 import typer
 from ..console import pprint
+from ..version import version
 
 help_text = r"""
    _____                      __    ___    ____ 
@@ -11,10 +12,12 @@ help_text = r"""
       /____/                                    
 """
 
-description = """[red]SyncL2R[/] is an [yellow]all-in-one[/] tool for: 
-- [yellow]local and remote file synchronization
+description = f"""[red]SyncL2R[/] is an [yellow]all-in-one[/] tool for: 
+- [bright_green]local and remote file synchronization
 - one-click deployment
 - and multiple functions.
+
+version: {version}
 """
 
 
@@ -23,6 +26,7 @@ class Helper:
     def help(self):
         if len(sys.argv) <= 1:
             print(help_text)
+
             pprint(description)
         return ""
 

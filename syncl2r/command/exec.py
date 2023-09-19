@@ -11,7 +11,7 @@ def exec_action(
     config: str = typer.Option(
         None, help="config file path, default find one match ./*.l2r.yaml"
     ),
-    show_list: bool = typer.Option(False, help="show the actions list"),
+    show_list: bool = typer.Option(False, "--all", "-a", help="show the actions list"),
 ):
     config_modal = load_config(config)
     if config_modal.actions is None:

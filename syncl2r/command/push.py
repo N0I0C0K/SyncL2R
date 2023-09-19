@@ -13,6 +13,8 @@ def push(
     ),
     mode: int = typer.Option(
         2,
+        "--mode",
+        "-m",
         help="sync mode 1:force(del then upload) 2:normal 3:soft(upload only new files)",
     ),
     invoke_event: bool = typer.Option(True, help="weather invoke events"),

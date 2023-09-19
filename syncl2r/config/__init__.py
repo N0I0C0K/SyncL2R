@@ -11,6 +11,7 @@ class ConnectConfig(BaseModel):
     port: int = 22
     username: str | None
     password: str | None
+    key_name: str | None
 
 
 class FileSyncConfig(BaseModel):

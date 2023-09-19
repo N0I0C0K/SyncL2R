@@ -1,7 +1,8 @@
 import paramiko
-from ..console import console, pprint
-from ..config import get_global_config, ConnectConfig
+import pathlib
 from shlex import quote
+from ..console import pprint
+from ..config import get_global_config, ConnectConfig
 
 
 class Connection:
@@ -13,25 +14,37 @@ class Connection:
         self.close = self.ssh_client.close
 
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        console.print(
+        self.ssh_client.load_system_host_keys()
+
+        pprint(
             f"[info]start link to [underline red]{self.config.ip}:{self.config.port}@{self.config.username}",
             end=" ",
         )
         try:
-            self.ssh_client.connect(
-                self.config.ip,
-                self.config.port,
-                self.config.username,
-                self.config.password,
-                timeout=5,
-            )
+            if self.config.password is not None:
+                self.ssh_client.connect(
+                    self.config.ip,
+                    self.config.port,
+                    self.config.username,
+                    self.config.password,
+                    timeout=5,
+                )
+            elif self.config.key_name is not None:
+                key_file = pathlib.Path.home() / ".ssh" / self.config.key_name
+                if not key_file.exists():
+                    raise FileNotFoundError(f"{key_file.as_posix()} can not be found")
+                with key_file.open() as f:
+                    pkey = paramiko.RSAKey.from_private_key(f)
+                self.ssh_client.connect(
+                    self.config.ip, self.config.port, self.config.username, pkey=pkey
+                )
         except TimeoutError:
             pprint(
                 f"[danger.high]can not connect to the {self.config.ip}:{self.config.port}!"
             )
             raise
         else:
-            console.print("[green]success")
+            pprint("[green]success")
         self.exec_command = self.ssh_client.exec_command
         self.__sftp_client: paramiko.SFTPClient | None = None
 
@@ -45,7 +58,7 @@ class Connection:
         self.ssh_client.close()
         if self.__sftp_client is not None:
             self.__sftp_client.close()
-        console.print(
+        pprint(
             f"[green bold]connection[red]({self.config.ip}:{self.config.port}@{self.config.username})[/] close[/] "
         )
 
