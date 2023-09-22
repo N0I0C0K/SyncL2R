@@ -10,5 +10,5 @@ from ..utils.sftp_utils import walk_remote_directory
 
 @app.command()
 def test():
-    config = load_config()
+    # config = load_config()
     conn = Connection()

@@ -1,7 +1,7 @@
 import typer
 import pathlib
 from .app import app
-from ..config import load_config
+from ..config import get_global_config
 from ..console import pprint
 from ..connect_core import Connection
 from ..sync_core import SyncTask, SyncMode
@@ -11,9 +11,6 @@ from ..utils.sftp_utils import rfile_equal_lfile
 
 @app.command(name="push", help="push file to remote")
 def push(
-    config: str = typer.Option(
-        None, help="config file path, default find one match ./*.l2r.yaml"
-    ),
     mode: int = typer.Option(
         2,
         "--mode",
@@ -26,7 +23,7 @@ def push(
     ),
 ):
     try:
-        config_modal = load_config(config)
+        config_modal = get_global_config()
         connection = Connection()
         sync_task = SyncTask(connection)
         if show_diff:

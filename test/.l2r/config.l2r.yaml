@@ -1,0 +1,13 @@
+actions: []
+connect_config:
+  ip: 106.52.152.111
+  key_name: remote
+  port: 22
+  username: root
+events:
+  push_complete_exec: []
+  push_start_exec: []
+file_sync_config:
+  exclude: []
+  remote_root_path: test
+  root_path: .

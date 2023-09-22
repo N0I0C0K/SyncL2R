@@ -61,10 +61,18 @@ def load_config(
         set_global_config(modal)
         return modal
     if config_path_or_obj is None:
-        for file_name in os.listdir():
+        if not os.path.exists("./.l2r"):
+            raise FileNotFoundError(
+                ".l2r dir is not find, Probably not initialized yet"
+            )
+        for file_name in os.listdir("./.l2r"):
             if file_name.count(".l2r"):
-                pprint(f"[info]use config file [red]{file_name}")
-                config_path_or_obj = pathlib.Path(os.path.abspath(file_name))
+                config_path_or_obj = (
+                    pathlib.Path(os.path.abspath(".")) / ".l2r" / file_name
+                )
+                pprint(f"[info]use config file [red]{config_path_or_obj.as_posix()}")
+                break
+
     if isinstance(config_path_or_obj, str):
         config_path_or_obj = pathlib.Path(os.path.abspath(config_path_or_obj))
     if isinstance(config_path_or_obj, pathlib.Path):

@@ -8,12 +8,9 @@ from ..connect_core import Connection
 @app.command(name="exec", help="exec action")
 def exec_action(
     action: str = typer.Argument(""),
-    config: str = typer.Option(
-        None, help="config file path, default find one match ./*.l2r.yaml"
-    ),
     show_list: bool = typer.Option(False, "--all", "-a", help="show the actions list"),
 ):
-    config_modal = load_config(config)
+    config_modal = load_config()
     if config_modal.actions is None:
         pprint("[warn]config has no action")
         return

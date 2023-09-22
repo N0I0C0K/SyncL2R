@@ -1,6 +1,6 @@
 import typer
 from .app import app
-from ..config import load_config
+from ..config import get_global_config
 from ..utils.utils import show_sync_file_tree
 from ..connect_core import Connection
 from ..utils.sftp_utils import show_remote_file_tree
@@ -8,12 +8,11 @@ from ..utils.sftp_utils import show_remote_file_tree
 
 @app.command(name="show", help="show file struct for the current sync file")
 def show_files(
-    config: str = typer.Option(None),
     show_remote: bool = typer.Option(
         False, "--remote", "-r", help="show remote path tree"
     ),
 ):
-    global_config = load_config(config)
+    global_config = get_global_config()
     if not show_remote:
         show_sync_file_tree(global_config.file_sync_config)
     else:

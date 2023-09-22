@@ -29,17 +29,14 @@ def init(
     sync_path: str = typer.Option(
         ".", "--local-path", "-lp", help="local path to sync"
     ),
-    config_name: str = typer.Option(
-        "config",
-        "--config-name",
-        help="custom file name for the config name => config.l2r.yaml",
-    ),
     test_connect: bool = typer.Option(
         default=False,
         help="test connection before write config file, Used to check whether the connection configuration is correct",
     ),
 ):
-    conifg_file = os.path.abspath(f"./{config_name}.l2r.yaml")
+    if not os.path.exists("./.l2r"):
+        os.makedirs(".l2r")
+    conifg_file = os.path.abspath("./.l2r/config.l2r.yaml")
     if os.path.exists(conifg_file):
         replace = typer.confirm(f"{conifg_file} already exist, do you want to replace?")
         if not replace:
@@ -62,6 +59,8 @@ def init(
             "remote_root_path": remote_path,
             "exclude": [],
         },
+        "events": {"push_complete_exec": [], "push_start_exec": []},
+        "actions": [],
     }
 
     # check remote connection config is alright

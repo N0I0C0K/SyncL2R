@@ -1,6 +1,5 @@
 import typer
 from .app import app
-from ..config import load_config
 from ..console import pprint
 from ..connect_core import Connection
 
@@ -14,7 +13,6 @@ def link_shell(
     import time
     from ..utils.ssh_utils import channel_recv
 
-    load_config(config)
     try:
         connection = Connection()
         ssh_client = connection.ssh_client
