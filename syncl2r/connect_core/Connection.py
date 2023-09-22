@@ -1,8 +1,9 @@
+import typing
 import paramiko
 import pathlib
 from shlex import quote
 from ..console import pprint
-from ..config import get_global_config, ConnectConfig
+from ..config import get_global_config, ConnectConfig, AdvancedCommand
 
 
 class Connection:
@@ -63,7 +64,9 @@ class Connection:
             f"[green bold]connection[red]({self.config.ip}:{self.config.port}@{self.config.username})[/] close[/] "
         )
 
-    def exec_cmd_list(self, cmd_list: list[str], pwd: str | None = None):
+    def exec_cmd_list(
+        self, cmd_list: list[str | AdvancedCommand] | list[str], pwd: str | None = None
+    ):
         import time
 
         cmd_encode_list: list[str] = []
@@ -74,8 +77,24 @@ class Connection:
         cmd_encode_list.append('echo "Your current remote path:"')
         cmd_encode_list.append("pwd")
         for cmd in cmd_list:
-            cmd_encode_list.append(f"echo '[green][*]\"{quote(cmd)}\" start execute'")
-            cmd_encode_list.append(cmd)
+            if isinstance(cmd, str):
+                cmd_encode_list.append(
+                    f"echo '[green][*]\"{quote(cmd)}\" start execute'"
+                )
+                cmd_encode_list.append(cmd)
+            elif isinstance(cmd, AdvancedCommand):
+                if cmd.mode == "once":
+                    cmd_encode_list.append(
+                        f"echo '[green][*]\"{quote(cmd.cmd)}\" start execute'"
+                    )
+                    cmd_encode_list.append(cmd.cmd)
+                elif cmd.mode == "nohup":
+                    cmd_encode_list.append(
+                        f"echo '[red][*]\"{quote(cmd.cmd)}\" (forever task) start execute'"
+                    )
+                    cmd_encode_list.append(
+                        f"nohup {cmd.cmd} > .l2r/out.log 2>&1 & echo $! >> .l2r/pids.txt"
+                    )
         cmd_encode_list.append("echo sdif92ja0lfas")
         cmd_res = ";".join(cmd_encode_list)
 

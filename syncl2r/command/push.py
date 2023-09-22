@@ -7,6 +7,7 @@ from ..connect_core import Connection
 from ..sync_core import SyncTask, SyncMode
 from ..utils.utils import show_sync_file_tree
 from ..utils.sftp_utils import rfile_equal_lfile
+from ..sync_core.deploy_core import stop_last_pids
 
 
 @app.command(name="push", help="push file to remote")
@@ -50,6 +51,9 @@ def push(
             and config_modal.events is not None
             and config_modal.events.push_start_exec is not None
         ):
+            # Stop running task
+            stop_last_pids(connection)
+
             # invoke push start events
             pprint("[yellow]start exec start events")
             connection.exec_cmd_list(

@@ -1,6 +1,7 @@
 import pathlib
 import json
 import os
+import typing
 
 from ..console import pprint
 from pydantic import BaseModel
@@ -31,11 +32,17 @@ class FileSyncConfig(BaseModel):
     def __init__(self, **data):
         super().__init__(**data)
         self.root_path = os.path.abspath(self.root_path)
+        self.exclude.append("./.l2r")
+
+
+class AdvancedCommand(BaseModel):
+    cmd: str
+    mode: typing.Literal["nohup", "once"] = "once"
 
 
 class EventConfig(BaseModel):
-    push_complete_exec: list[str] | None = None
-    push_start_exec: list[str] | None = None
+    push_complete_exec: list[str | AdvancedCommand] | None = None
+    push_start_exec: list[str | AdvancedCommand] | None = None
 
 
 class ActionConfig(BaseModel):
@@ -51,6 +58,7 @@ class GlobalConfig(BaseModel):
 
 
 global_config: GlobalConfig | None = None
+l2r_path: pathlib.PurePath = pathlib.PurePath("./.l2r")
 
 
 def load_config(
@@ -65,17 +73,20 @@ def load_config(
             raise FileNotFoundError(
                 ".l2r dir is not find, Probably not initialized yet"
             )
-        for file_name in os.listdir("./.l2r"):
-            if file_name.count(".l2r"):
-                config_path_or_obj = (
-                    pathlib.Path(os.path.abspath(".")) / ".l2r" / file_name
-                )
-                pprint(f"[info]use config file [red]{config_path_or_obj.as_posix()}")
-                break
+        config_path_or_obj = (
+            pathlib.Path(os.path.abspath(".")) / ".l2r" / "config.l2r.yaml"
+        )
+        # pprint(f"[info]use config file [red]{config_path_or_obj.as_posix()}")
+        # for file_name in os.listdir("./.l2r"):
+        #     if file_name.count(".l2r"):
+        #         break
 
     if isinstance(config_path_or_obj, str):
         config_path_or_obj = pathlib.Path(os.path.abspath(config_path_or_obj))
     if isinstance(config_path_or_obj, pathlib.Path):
+        if not config_path_or_obj.exists():
+            raise FileNotFoundError("config not find!")
+
         if config_path_or_obj.suffix == ".yaml":
             import yaml
 
