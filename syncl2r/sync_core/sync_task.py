@@ -125,6 +125,26 @@ class SyncTask:
             upload_file_or_dir(_path, _remote_path)
         return file_upload, dir_maked
 
+    def pull_file(
+        self, relative_loc_file: pathlib.PurePath, target_path: pathlib.PurePath
+    ):
+        remote_path = pathlib.PurePath(self.config.remote_root_path, relative_loc_file)
+        if not sftp_utils.exist_remote(remote_path.as_posix(), self.sftp_client):
+            pprint(
+                f"[warning]{relative_loc_file.as_posix()} does not exist on remote server"
+            )
+            return
+
+        with progress.Progress() as pross:
+            task = pross.add_task(f"[green]pulling [yellow]{relative_loc_file}")
+
+            def task_pross(nowhave: int, allbyte: int):
+                pross.update(task, completed=nowhave / allbyte * 100)
+
+            self.sftp_client.get(
+                remote_path.as_posix(), target_path.as_posix(), task_pross
+            )
+
     def pull(self, relative_path: str):
         _loc_path = pathlib.PurePath(relative_path)
         loc_root_path = pathlib.Path(self.config.root_path)
