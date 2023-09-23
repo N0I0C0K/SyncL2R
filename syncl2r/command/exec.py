@@ -1,6 +1,6 @@
 import typer
 from .app import app
-from ..config import load_config
+from ..config import get_global_config
 from ..console import pprint
 from ..connect_core import Connection
 
@@ -10,7 +10,7 @@ def exec_action(
     action: str = typer.Argument(""),
     show_list: bool = typer.Option(False, "--all", "-a", help="show the actions list"),
 ):
-    config_modal = load_config()
+    config_modal = get_global_config()
     if config_modal.actions is None:
         pprint("[warn]config has no action")
         return

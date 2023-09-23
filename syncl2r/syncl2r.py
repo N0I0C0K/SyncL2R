@@ -7,7 +7,10 @@ __all__ = ["main"]
 
 
 def main():
-    load_config()
+    try:
+        load_config()
+    except:
+        pass
     app()
 
 
