@@ -68,11 +68,17 @@ def get_remote_tree(ssh: paramiko.SSHClient, pattens: list[str], pwd: str) -> li
     comm_path = ssh.exec_command(f"cd {pwd}; pwd")[1].read().decode().removesuffix("\n")
     sh = shlex.quote(remote_tree % (" ".join(map(lambda x: f'"{x}"', pattens))))
     ssh.exec_command(f"cd {pwd}; echo {sh} > {sh_file}")
-    _, out, _ = ssh.exec_command(f"cd {pwd}; bash {sh_file}")
+    out = (
+        ssh.exec_command(f"cd {pwd}; bash {sh_file}")[1]
+        .read()
+        .decode()
+        .removesuffix("\n")
+    )
+
     files = list(
         map(
             lambda x: x.removeprefix(comm_path).removeprefix("/"),
-            out.read().decode().split("\n"),
+            out.split("\n"),
         )
     )
     return files

@@ -142,3 +142,34 @@ def get_remote_file_tree(path: str, sftp: paramiko.SFTPClient):
     )
     walk_remote_directory(path, tree, sftp)
     return tree
+
+
+def remote_file_list_to_tree(files: list[str], pwd: str) -> Tree:
+    tree = Tree(
+        f":open_file_folder: [link file://{pwd}]{pwd}",
+        guide_style="bold bright_blue",
+    )
+    t_idx = 0
+
+    def dfs(root: Tree, par_path: str):
+        nonlocal t_idx
+        while t_idx < len(files) and files[t_idx].startswith(par_path):
+            l_idx = files[t_idx].find("||")
+            if l_idx == -1:
+                branch = root.add(
+                    f"[bold magenta]:open_file_folder: {files[t_idx]}",
+                    style="",
+                    guide_style="",
+                )
+                t_idx += 1
+                dfs(branch, files[t_idx - 1])
+            else:
+                filename = files[t_idx][:l_idx]
+                text_filename = Text(filename, "green")
+                text_filename.highlight_regex(r"\..*$", "bold red")
+                icon = "📄 "
+                root.add(Text(icon) + text_filename)
+                t_idx += 1
+
+    dfs(tree, "")
+    return tree
