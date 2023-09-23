@@ -15,7 +15,8 @@ def stop_last_pids(conn: Connection):
     _, out, _ = conn.exec_command(f"cat {pid_file.as_posix()}")
     pids = out.read().decode().split("\n")
 
-    cmds = list(map(lambda v: f"kill -s 9 {v}", filter(lambda x: len(x) > 0, pids)))
+    # cmds = list(map(lambda v: f"kill -s 9 {v}", filter(lambda x: len(x) > 0, pids)))
+    cmds = [f'kill -s 9 {" ".join(pids)}']
     # print(cmds)
     conn.exec_cmd_list(cmds, config.file_sync_config.remote_root_path)
     conn.exec_command(f"> {pid_file.as_posix()}")

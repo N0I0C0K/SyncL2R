@@ -5,9 +5,10 @@ from ..config import get_global_config
 from ..console import pprint
 from ..connect_core import Connection
 from ..sync_core import SyncTask, SyncMode
-from ..utils.utils import show_sync_file_tree
+from ..utils.utils import show_sync_file_tree, get_file_md5
 from ..utils.sftp_utils import rfile_equal_lfile
 from ..sync_core.deploy_core import stop_last_pids
+from ..utils.remote_sh import get_remote_tree
 
 
 @app.command(name="push", help="push file to remote")
@@ -32,13 +33,26 @@ def push(
                 config_modal.file_sync_config.remote_root_path
             )
 
-            def esc_equal_file(path: pathlib.Path):
-                rp = remote_path / path.relative_to(
-                    config_modal.file_sync_config.root_path
-                )
+            remote_files = get_remote_tree(
+                connection.ssh_client,
+                config_modal.file_sync_config.exclude,
+                config_modal.file_sync_config.remote_root_path,
+            )
 
-                return rfile_equal_lfile(
-                    rp.as_posix(), path.as_posix(), connection.ssh_client
+            remote_md5_map: dict[str, str] = dict()
+            for file in remote_files:
+                t = file.find("||")
+                if t != -1:
+                    remote_md5_map[file[:t]] = file[t + 2 :]
+
+            def esc_equal_file(path: pathlib.PurePath):
+                rp = path.relative_to(
+                    config_modal.file_sync_config.root_path
+                ).as_posix()
+
+                return (
+                    rp in remote_md5_map
+                    and get_file_md5(path.as_posix()) == remote_md5_map[rp]
                 )
 
             show_sync_file_tree(config_modal.file_sync_config, esc_equal_file)

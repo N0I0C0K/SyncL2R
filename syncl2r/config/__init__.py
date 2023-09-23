@@ -32,7 +32,7 @@ class FileSyncConfig(BaseModel):
     def __init__(self, **data):
         super().__init__(**data)
         self.root_path = os.path.abspath(self.root_path)
-        self.exclude.append("./.l2r")
+        # self.exclude.append("./.l2r")
 
 
 class AdvancedCommand(BaseModel):
