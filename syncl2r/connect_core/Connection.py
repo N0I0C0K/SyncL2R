@@ -49,6 +49,7 @@ class Connection:
         else:
             pprint("[green]success")
         self.exec_command = self.ssh_client.exec_command
+        set_global_connection(self)
 
     @property
     def sftp_client(self) -> paramiko.SFTPClient:
@@ -60,8 +61,8 @@ class Connection:
         self.ssh_client.close()
         if self.__sftp_client is not None:
             self.__sftp_client.close()
-        pprint(
-            f"[green bold]connection[red]({self.config.ip}:{self.config.port}@{self.config.username})[/] close[/] "
+        print(
+            f"connection({self.config.ip}:{self.config.port}@{self.config.username}) close"
         )
 
     def exec_cmd_list(
@@ -110,15 +111,15 @@ class Connection:
         pprint(f"all command exec finished, use {time.time() - start_time:.2f} seconds")
 
 
-# global_connection: Connection | None = None
+global_connection: Connection | None = None
 
 
-# def set_global_connection(connection: Connection):
-#     global global_connection
-#     global_connection = connection
+def set_global_connection(connection: Connection):
+    global global_connection
+    global_connection = connection
 
 
-# def get_connection() -> Connection:
-#     if global_connection is None:
-#         raise ValueError("global connection is not init")
-#     return global_connection
+def get_global_connection() -> Connection:
+    if global_connection is None:
+        raise ValueError("global connection is not init")
+    return global_connection

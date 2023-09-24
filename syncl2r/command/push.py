@@ -8,7 +8,7 @@ from ..sync_core import SyncTask, SyncMode
 from ..utils.utils import show_sync_file_tree, get_file_md5
 from ..utils.sftp_utils import rfile_equal_lfile
 from ..sync_core.deploy_core import stop_last_pids
-from ..utils.remote_sh import get_remote_tree
+from ..bash import get_remote_tree
 
 
 @app.command(name="push", help="push file to remote")
@@ -34,9 +34,7 @@ def push(
             )
 
             remote_files = get_remote_tree(
-                connection.ssh_client,
                 config_modal.file_sync_config.exclude,
-                config_modal.file_sync_config.remote_root_path,
             )
 
             remote_md5_map: dict[str, str] = dict()

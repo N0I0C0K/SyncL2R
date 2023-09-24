@@ -4,7 +4,7 @@ from ..config import get_global_config
 from ..utils.utils import show_sync_file_tree
 from ..connect_core import Connection
 from ..utils.sftp_utils import show_remote_file_tree, remote_file_list_to_tree
-from ..utils.remote_sh import get_remote_tree
+from ..bash import get_remote_tree
 
 
 @app.command(name="show", help="show file struct for the current sync file")
@@ -23,9 +23,7 @@ def show_files(
 
         tree = remote_file_list_to_tree(
             get_remote_tree(
-                conn.ssh_client,
                 global_config.file_sync_config.exclude,
-                global_config.file_sync_config.remote_root_path,
             ),
             global_config.file_sync_config.remote_root_path,
         )

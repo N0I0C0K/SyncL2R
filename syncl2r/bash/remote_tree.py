@@ -1,5 +1,4 @@
-import paramiko
-import shlex
+from .executor import execute_bash, execute_cmd
 
 remote_tree = """
 #!/bin/bash
@@ -33,9 +32,9 @@ traverse_directory() {
     if path_matches_patterns "$(basename "$directory")"; then
         return
     fi
-
+    
     # 遍历目录下的所有文件和子目录
-    for file in "$directory"/*
+    for file in "$directory"/* "$directory"/.[!.]*;
     do
         if [ -d "$file" ]; then
 	        echo "$file"
@@ -62,17 +61,12 @@ traverse_directory "$(pwd)"
 """
 
 
-def get_remote_tree(ssh: paramiko.SSHClient, pattens: list[str], pwd: str) -> list[str]:
-    # sftp.put()
-    sh_file = "js93h378df_get_remote_tree.sh"
-    comm_path = ssh.exec_command(f"cd {pwd}; pwd")[1].read().decode().removesuffix("\n")
-    sh = shlex.quote(remote_tree % (" ".join(map(lambda x: f'"{x}"', pattens))))
-    ssh.exec_command(f"cd {pwd}; echo {sh} > {sh_file}")
-    out = (
-        ssh.exec_command(f"cd {pwd}; bash {sh_file}")[1]
-        .read()
-        .decode()
-        .removesuffix("\n")
+def get_remote_tree(pattens: list[str]) -> list[str]:
+    comm_path = execute_cmd("pwd")
+
+    out = execute_bash(
+        remote_tree,
+        " ".join(map(lambda x: f'"{x}"', pattens)),
     )
 
     files = list(

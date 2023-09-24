@@ -1,7 +1,7 @@
 from .app import app
 from .app import app
 from ..connect_core import Connection
-from ..utils.remote_sh import get_remote_tree
+from ..bash import get_remote_tree
 from ..config import get_global_config
 from ..console import pprint
 
@@ -13,8 +13,6 @@ def test():
     config = get_global_config()
     pprint(
         get_remote_tree(
-            conn.ssh_client,
             config.file_sync_config.exclude,
-            config.file_sync_config.remote_root_path,
         )
     )

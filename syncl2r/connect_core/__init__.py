@@ -1,1 +1,1 @@
-from .Connection import Connection
+from .Connection import Connection, get_global_connection
