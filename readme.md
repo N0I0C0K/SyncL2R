@@ -70,6 +70,21 @@ syncl2r pull
 
 ![Alt text](./imgs/pull.gif)
 
+### diff
+
+查看本地文件和远程文件的差异，
+![Alt text](imgs/diff.gif)
+
+### show
+
+查看本地/远程目录结构
+
+查看本地同步目录结构：
+![show local](imgs/show.gif)
+
+查看远程目录结构：
+![show remote](imgs/showr.gif)
+
 ### Shell
 
 ```shell
