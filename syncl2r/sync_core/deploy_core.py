@@ -16,7 +16,8 @@ def stop_last_pids(conn: Connection):
     )
     _, out, _ = conn.exec_command(f"cat {pid_file.as_posix()}")
     pids = out.read().decode().removesuffix("\n").split("\n")
-
+    if len(pids) == 0:
+        return
     pprint(f"Will terminate the process and its child processes: {pids}")
 
     # # cmds = list(map(lambda v: f"kill -s 9 {v}", filter(lambda x: len(x) > 0, pids)))

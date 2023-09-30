@@ -27,6 +27,8 @@ class FileSyncConfig(BaseModel):
             #     return True
             if path.match(par):
                 return True
+        if not path.is_dir() and path.stat().st_size == 0:
+            return True
         return False
 
     def __init__(self, **data):

@@ -17,5 +17,7 @@ setup(
     author_email="nick131410@aliyun.com",
     url="https://github.com/N0I0C0K/SyncL2R",
     install_requires=load_requirements("./requirements.txt"),
-    entry_points={"console_scripts": ["syncl2r=syncl2r:entry_point"]},
+    entry_points={
+        "console_scripts": ["syncl2r=syncl2r:entry_point", "sync=syncl2r:entry_point"]
+    },
 )

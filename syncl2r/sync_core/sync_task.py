@@ -24,14 +24,24 @@ class SyncTask:
     ) -> None:
         self.ssh_client = connection.ssh_client
         self.sftp_client = connection.sftp_client
-
         self.config = get_global_config().file_sync_config if config is None else config
+        self.total_upload_file = 0
+        self.total_pull_file = 0
 
-    def push(self, mode: SyncMode):
-        upload_file_nums, _ = self.upload(
-            self.config.root_path, self.config.remote_root_path, mode=mode
-        )
-        pprint(f"[green]upload complete [red]{upload_file_nums}[/] file upload")
+    def push_root_path(self, mode: SyncMode):
+        self.total_upload_file = 0
+        self.upload(self.config.root_path, self.config.remote_root_path, mode=mode)
+        pprint(f"[green]upload complete [red]{self.total_upload_file}[/] file upload")
+
+    def push_files(self, files: list[pathlib.Path], *, mode: SyncMode):
+        self.total_upload_file = 0
+        r_path = pathlib.PurePath(self.config.remote_root_path)
+        for file in files:
+            self.upload_file_or_dir(
+                file,
+                r_path / (file.relative_to(self.config.root_path)),
+                mode=mode,
+            )
 
     def show_sync_file_tree(self):
         pprint("[red bold]file tree prepare to sync: ")
@@ -42,6 +52,63 @@ class SyncTask:
             )
         )
 
+    def upload_file(
+        self,
+        file_path: pathlib.Path,
+        r_path: pathlib.PurePath,
+    ):
+        if not file_path.exists():
+            pprint(f"[danger]{file_path} not exist")
+            return
+        if sftp_utils.exist_remote(
+            r_path.as_posix(), self.sftp_client
+        ) and sftp_utils.rfile_equal_lfile(
+            r_path.as_posix(), file_path.as_posix(), self.ssh_client
+        ):
+            pprint(f"[warning]{file_path.name} has no change, skip")
+            return
+        with progress.Progress() as pross:
+            task = pross.add_task(
+                f"[green]uploading [yellow]{file_path.relative_to(self.config.root_path)}"
+            )
+
+            def task_pross(nowhave: int, allbyte: int):
+                pross.update(task, completed=nowhave / allbyte * 100)
+
+            self.sftp_client.put(
+                file_path.as_posix(), r_path.as_posix(), task_pross, confirm=True
+            )
+        self.total_upload_file += 1
+
+    def upload_dir(self, dir_path: pathlib.Path, r_path: pathlib.PurePath):
+        if not sftp_utils.exist_remote(r_path.as_posix(), self.sftp_client):
+            self.sftp_client.mkdir(r_path.as_posix())
+            pprint(f"[info]create folder {r_path.as_posix()}")
+        for child_file in dir_path.iterdir():
+            self.upload_file_or_dir(child_file, r_path / child_file.name)
+
+    def upload_file_or_dir(
+        self,
+        file_or_dir: pathlib.Path,
+        r_path: pathlib.PurePath,
+        *,
+        mode=SyncMode.normal,
+        use_exclude=True,
+    ):
+        if use_exclude and self.config.escape_file(file_or_dir):
+            return
+        if file_or_dir.is_dir():
+            self.upload_dir(file_or_dir, r_path)
+        else:
+            if mode == SyncMode.soft and sftp_utils.exist_remote(
+                r_path.as_posix(), self.sftp_client
+            ):
+                pprint(
+                    f"[info.low]skip [yellow]{file_or_dir.relative_to(self.config.root_path)}[/] (already exist)"
+                )
+                return
+            self.upload_file(file_or_dir, r_path)
+
     def upload(
         self,
         path: str,
@@ -49,69 +116,19 @@ class SyncTask:
         *,
         use_exclude=True,
         mode: SyncMode = SyncMode.normal,
-    ) -> tuple[int, int]:
+    ):
         pprint(f"[danger.high]upload [yellow2]{mode.name}[/] mode")
 
         if self.sftp_client is None:
             pprint("[danger.high]connection failed")
         _path = pathlib.Path(path)
         _remote_path = pathlib.PurePath(remote_path)
-        file_upload, dir_maked = 0, 0
 
         if not sftp_utils.exist_remote(_remote_path.as_posix(), self.sftp_client):
             pprint(
                 f"[warning]remote does not exist {_remote_path.as_posix()}, now created"
             )
             self.sftp_client.mkdir(_remote_path.as_posix())
-
-        def upload_dir(dir_path: pathlib.Path, r_path: pathlib.PurePath):
-            r_path = r_path / dir_path.name
-            if not sftp_utils.exist_remote(r_path.as_posix(), self.sftp_client):
-                self.sftp_client.mkdir(r_path.as_posix())
-                pprint(f"[info]create folder {dir_path.relative_to(_path)}")
-            for child_file in dir_path.iterdir():
-                upload_file_or_dir(child_file, r_path)
-
-        def upload_file(file_path: pathlib.Path, r_path: pathlib.PurePath):
-            nonlocal file_upload
-            if not file_path.exists():
-                pprint(f"[danger]{file_path} not exist")
-                return
-            r_path = r_path / file_path.name
-            if mode == SyncMode.soft and sftp_utils.exist_remote(
-                r_path.as_posix(), self.sftp_client
-            ):
-                pprint(
-                    f"[info.low]skip [yellow]{file_path.relative_to(path)}[/] (already exist)"
-                )
-                return
-            if sftp_utils.exist_remote(
-                r_path.as_posix(), self.sftp_client
-            ) and sftp_utils.rfile_equal_lfile(
-                r_path.as_posix(), file_path.as_posix(), self.ssh_client
-            ):
-                pprint(f"[warning]{file_path.name} has no change, skip")
-                return
-            with progress.Progress() as pross:
-                task = pross.add_task(
-                    f"[green]uploading [yellow]{file_path.relative_to(_path)}"
-                )
-
-                def task_pross(nowhave: int, allbyte: int):
-                    pross.update(task, completed=nowhave / allbyte * 100)
-
-                self.sftp_client.put(
-                    file_path.as_posix(), r_path.as_posix(), task_pross, confirm=True
-                )
-            file_upload += 1
-
-        def upload_file_or_dir(file_or_dir: pathlib.Path, r_path: pathlib.PurePath):
-            if use_exclude and self.config.escape_file(file_or_dir):
-                return
-            if file_or_dir.is_dir():
-                upload_dir(file_or_dir, r_path)
-            else:
-                upload_file(file_or_dir, r_path)
 
         if mode == SyncMode.force:
             del_p = (_remote_path / "*").as_posix()
@@ -120,10 +137,13 @@ class SyncTask:
                 pprint(f"[danger.high]del remote folder [yellow2]({del_p})")
         if _path.is_dir():
             for child_file in _path.iterdir():
-                upload_file_or_dir(child_file, _remote_path)
+                self.upload_file_or_dir(
+                    child_file, _remote_path, use_exclude=use_exclude, mode=mode
+                )
         else:
-            upload_file_or_dir(_path, _remote_path)
-        return file_upload, dir_maked
+            self.upload_file_or_dir(
+                _path, _remote_path, use_exclude=use_exclude, mode=mode
+            )
 
     def pull_file(
         self,
