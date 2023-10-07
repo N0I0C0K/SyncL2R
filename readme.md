@@ -9,7 +9,7 @@
       /____/                                    
 ```
 
-一个本地和远程文件同步，部署工具，集多种功能于一身的工具
+一个针对单个项目，离线的小型流水线部署工具
 
 - 可配置忽略文件
 - 支持正则表达式匹配
@@ -17,6 +17,8 @@
 - 一键部署任务触发
 - 支持自定义动作
 - 漂亮的终端输出
+
+[查看详细文档-Wiki](https://github.com/N0I0C0K/SyncL2R/wiki/Why-Syncl2r%3F)
 
 ## 适用场景
 
@@ -72,7 +74,7 @@ syncl2r pull
 
 ### diff
 
-查看本地文件和远程文件的差异，
+查看本地文件和远程文件的差异
 ![Alt text](imgs/diff.gif)
 
 ### show
@@ -104,6 +106,10 @@ Syncl2r支持事件触发，用来执行shell命令，目前支持以下事件�
 
 config文件名称默认为`config.l2r.yaml`，**如果命令中不指定config会默认寻找当前目录下第一个满足`*.l2r.yaml`的文件**
 
+### 下面以一个nextjs项目部署配置举例
+
+1. 编写配置文件，执行命令`sync init -u root:test123@127.0.0.1:11022 -rp /home/test -lp .`，生成.l2r目录，随后编辑`config.l2r.yaml`
+
 ```yaml
 connect_config:
   ip: 127.0.0.1                   # 远程主机ip
@@ -112,18 +118,25 @@ connect_config:
   port: 11022                     # ssh端口，不填默认22
 file_sync_config:
   exclude:                        # 同步排除文件，支持正则匹配
-    - *.config
     - node_modules
+    - .git
+    - .next
+    - .env
   remote_root_path: '/home/test'  # 远程根路径
   root_path: .                    # 本地同步根路径
 events:                           # 事件只要填写默认每次都会执行（可以设置不执行）
   push_complete_exec:             # 上传完毕后执行命令
-    - pwd
+    - npm i                       # 每次上传完成之后先更新依赖
+    - npm run build               # 完成之后进行构建
+    - cmd: npm run start          # 后台执行任务，模式为nohup
+      mode: nohup
   push_start_exec:                # 上传开始执行命令
     - echo hello world
-    - sleep 1
-    - pwd
+
 ```
+2. 开始上传，执行`sync push`，每次上传完成之后都可以自动关闭之前的进程，然后触发部署任务。
+
+
 
 ## install
 
