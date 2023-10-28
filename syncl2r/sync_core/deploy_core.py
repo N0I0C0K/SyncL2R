@@ -15,7 +15,8 @@ def stop_last_pids(conn: Connection):
         pathlib.PurePath(config.file_sync_config.remote_root_path) / ".l2r" / "pids.txt"
     )
     _, out, _ = conn.exec_command(f"cat {pid_file.as_posix()}")
-    pids = out.read().decode().removesuffix("\n").split("\n")
+    raw_pids = out.read().decode().removesuffix("\n").split("\n")
+    pids = list(filter(lambda x: len(x) > 0, raw_pids))
     if len(pids) == 0:
         return
     pprint(f"Will terminate the process and its child processes: {pids}")
