@@ -45,6 +45,8 @@ class AdvancedCommand(BaseModel):
 class EventConfig(BaseModel):
     push_complete_exec: list[str | AdvancedCommand] | None = None
     push_start_exec: list[str | AdvancedCommand] | None = None
+    start: list[str | AdvancedCommand] | None = None
+    stop: list[str | AdvancedCommand] | None = None
 
 
 class ActionConfig(BaseModel):

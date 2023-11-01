@@ -97,11 +97,22 @@ def push(
             and config_modal.events.push_complete_exec is not None
         ):
             # invoke push finissh events
-            pprint("[yellow]start exec finish events")
+            pprint("[yellow]start exec [on_push_complete] events")
             connection.exec_cmd_list(
                 config_modal.events.push_complete_exec,
                 config_modal.file_sync_config.remote_root_path,
             )
 
+        # start deployment tasks
+        if (
+            invoke_event
+            and config_modal.events is not None
+            and config_modal.events.start is not None
+        ):
+            pprint("[yellow]start exec [start] events")
+            connection.exec_cmd_list(
+                config_modal.events.start,
+                config_modal.file_sync_config.remote_root_path,
+            )
     except Exception as e:
         pprint(f"\n[danger]err happen in command push, error info: {e}")

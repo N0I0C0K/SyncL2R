@@ -6,7 +6,7 @@ from .init import init
 from .shell import link_shell
 from .show import show_files
 from .diff import show_diff
-from .stop import stop_remote
+from .remote import remote_cmd
 from .test import test
 
 
