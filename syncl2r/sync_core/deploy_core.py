@@ -42,7 +42,6 @@ def check_still_running(conn: Connection) -> bool:
         return False
     _, out, _ = conn.exec_command(f'ps -p {" ".join(pids)}')
     lines = out.read().decode().splitlines()
-    pprint(lines)
     return len(lines) > 1
 
 

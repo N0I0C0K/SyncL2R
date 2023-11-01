@@ -3,7 +3,11 @@ from .app import app
 from ..utils import pprint
 from ..config import get_global_config
 from ..connect_core import Connection
-from syncl2r.sync_core.deploy_core import stop_last_pids, get_entire_log
+from syncl2r.sync_core.deploy_core import (
+    stop_last_pids,
+    get_entire_log,
+    check_still_running,
+)
 
 remote_cmd = typer.Typer(name="remote", help="remote cmds")
 
@@ -39,3 +43,13 @@ def log_remote():
     conn = Connection()
     log = get_entire_log(conn)
     pprint(log)
+
+
+@remote_cmd.command(name="state", help="get remote running state")
+def get_state():
+    conn = Connection()
+    state = check_still_running(conn)
+    if state:
+        pprint("Remote running state: [green]running")
+    else:
+        pprint("Remote running state: [red]stopped")
