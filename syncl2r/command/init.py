@@ -76,14 +76,14 @@ def init(
         if pwd and pwd != "":
             init_data["connect_config"] |= {"password": pwd}
 
+    if ip is None:
+        ip = ""
+
     if key_name is not None:
         key_file = pathlib.Path.home() / ".ssh" / key_name
         if not key_file.exists():
             raise ValueError(f"key file({key_file.as_posix()}) is not exist")
         init_data["connect_config"] |= {"key_name": key_name}
-
-    if ip is None:
-        raise ValueError("ip address is none, please check your config is alright")
 
     if port is None or port == "":
         port = "22"
