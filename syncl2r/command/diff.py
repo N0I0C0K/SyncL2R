@@ -2,6 +2,7 @@ import os
 import typer
 import pathlib
 import subprocess
+import tempfile
 
 from ..connect_core import Connection
 from ..console import pprint
@@ -19,6 +20,8 @@ def show_diff(file: str = typer.Argument(help="Local file path (relative path)")
     conn = Connection()
     sync = SyncTask(conn)
     lf = pathlib.PurePath(file)
-    tp = pathlib.PurePath("./.l2r/tmp")
-    sync.pull_file(lf, tp)
-    subprocess.call(["code", "--diff", lf.as_posix(), tp.as_posix()], shell=True)
+    [tmp_file, file_name] = tempfile.mkstemp()
+    temp_file_open = os.fdopen(tmp_file, "wb")
+    # tp = pathlib.PurePath(file_name)
+    sync.pull_file(lf, temp_file_open)
+    subprocess.call(["code", "--diff", lf.as_posix(), file_name], shell=True)

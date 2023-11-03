@@ -2,6 +2,8 @@ import paramiko
 import pathlib
 import enum
 
+from io import BufferedWriter
+
 from ..connect_core import Connection
 from ..utils import sftp_utils, utils
 from ..console import pprint
@@ -148,11 +150,10 @@ class SyncTask:
     def pull_file(
         self,
         relative_loc_file: pathlib.PurePath,
-        target_path: pathlib.PurePath | None = None,
+        target_path: pathlib.PurePath | BufferedWriter | None = None,
     ):
         remote_path = pathlib.PurePath(self.config.remote_root_path, relative_loc_file)
-        if target_path is None:
-            target_path = relative_loc_file
+
         if not sftp_utils.exist_remote(remote_path.as_posix(), self.sftp_client):
             pprint(
                 f"[warning]{relative_loc_file.as_posix()} does not exist on remote server"
@@ -165,9 +166,17 @@ class SyncTask:
             def task_pross(nowhave: int, allbyte: int):
                 pross.update(task, completed=nowhave / allbyte * 100)
 
-            self.sftp_client.get(
-                remote_path.as_posix(), target_path.as_posix(), task_pross
-            )
+            if target_path is None:
+                target_path = relative_loc_file
+                self.sftp_client.get(
+                    remote_path.as_posix(), target_path.as_posix(), task_pross
+                )
+            elif isinstance(target_path, pathlib.PurePath):
+                self.sftp_client.get(
+                    remote_path.as_posix(), target_path.as_posix(), task_pross
+                )
+            elif isinstance(target_path, BufferedWriter):
+                self.sftp_client.getfo(remote_path.as_posix(), target_path, task_pross)
 
     def pull(self, relative_path: str):
         _loc_path = pathlib.PurePath(relative_path)
