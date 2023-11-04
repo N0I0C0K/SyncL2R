@@ -5,7 +5,7 @@ from ..config import get_global_config
 from ..connect_core import Connection
 from syncl2r.sync_core.deploy_core import (
     stop_last_pids,
-    get_entire_log,
+    get_remote_log,
     check_still_running,
 )
 
@@ -39,9 +39,16 @@ def restart_remote():
 
 
 @remote_cmd.command(name="log", help="show remote task log")
-def log_remote():
+def log_remote(
+    additional_cmds: list[str] = typer.Option(
+        None,
+        "-c",
+        "--additional-commands",
+        help="add additional command to cat remote log file, Use the | pipe splicing command",
+    )
+):
     conn = Connection()
-    log = get_entire_log(conn)
+    log = get_remote_log(conn, additional_cmds)
     pprint(log)
 
 

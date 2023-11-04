@@ -25,12 +25,16 @@ def get_pids(conn: Connection) -> list[str]:
     return pids
 
 
-def get_entire_log(conn: Connection) -> str:
+def get_remote_log(conn: Connection, additional_cmds: list[str] | None = None) -> str:
     config = get_global_config()
     log_file = (
         pathlib.PurePath(config.file_sync_config.remote_root_path) / ".l2r" / "out.log"
     )
-    _, out, _ = conn.exec_command(f"cat {log_file.as_posix()}")
+    cmd = f"cat {log_file.as_posix()}"
+    if additional_cmds is not None and len(additional_cmds) > 0:
+        cmd = cmd + "|" + "|".join(additional_cmds)
+
+    _, out, _ = conn.exec_command(cmd)
     raw = out.read().decode()
     return raw
 

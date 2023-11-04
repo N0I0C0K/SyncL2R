@@ -6,10 +6,11 @@ from ..sync_core.deploy_core import check_still_running
 from ..config import get_global_config
 from ..console import pprint
 
+import typer
+
 
 @app.command()
-def test():
+def test(st: list[str], ctx: typer.Context):
     # config = load_config()
-    conn = Connection()
-    config = get_global_config()
-    pprint(check_still_running(conn))
+    pprint(st)
+    # pprint(ctx)
