@@ -4,11 +4,13 @@ from ..config import get_global_config
 from ..bash import kill_pid_and_child
 from ..console import pprint
 
+from ..config.constant import Temp_Pids_Path, Temp_Output_Path
+
 
 def clear_last_pids(conn: Connection):
     config = get_global_config()
     pid_file = (
-        pathlib.PurePath(config.file_sync_config.remote_root_path) / ".l2r" / "pids.txt"
+        pathlib.PurePath(config.file_sync_config.remote_root_path) / Temp_Pids_Path
     )
     conn.exec_command(f"> {pid_file.as_posix()}")
 
@@ -16,7 +18,7 @@ def clear_last_pids(conn: Connection):
 def get_pids(conn: Connection) -> list[str]:
     config = get_global_config()
     pid_file = (
-        pathlib.PurePath(config.file_sync_config.remote_root_path) / ".l2r" / "pids.txt"
+        pathlib.PurePath(config.file_sync_config.remote_root_path) / Temp_Pids_Path
     )
     _, out, _ = conn.exec_command(f"cat {pid_file.as_posix()}")
     raw_pids = out.read().decode().removesuffix("\n").split("\n")
@@ -28,7 +30,7 @@ def get_pids(conn: Connection) -> list[str]:
 def get_remote_log(conn: Connection, additional_cmds: list[str] | None = None) -> str:
     config = get_global_config()
     log_file = (
-        pathlib.PurePath(config.file_sync_config.remote_root_path) / ".l2r" / "out.log"
+        pathlib.PurePath(config.file_sync_config.remote_root_path) / Temp_Output_Path
     )
     cmd = f"cat {log_file.as_posix()}"
     if additional_cmds is not None and len(additional_cmds) > 0:

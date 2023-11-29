@@ -4,6 +4,7 @@ import pathlib
 from shlex import quote
 from ..console import pprint
 from ..config import get_global_config, ConnectConfig, AdvancedCommand
+from config.constant import Temp_Output_Path, Temp_Pids_Path
 
 
 class Connection:
@@ -94,7 +95,7 @@ class Connection:
                         f"echo '[red][*]\"{quote(cmd.cmd)}\" (forever task) start execute'"
                     )
                     cmd_encode_list.append(
-                        f"nohup {cmd.cmd} > .l2r/out.log 2>&1 & echo $! >> .l2r/pids.txt"
+                        f"nohup {cmd.cmd} > {Temp_Output_Path.as_posix()} 2>&1 & echo $! >> {Temp_Pids_Path.as_posix()}"
                     )
         cmd_encode_list.append("echo sdif92ja0lfas")
         cmd_res = ";".join(cmd_encode_list)
