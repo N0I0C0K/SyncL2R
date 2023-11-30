@@ -4,7 +4,7 @@ from .app import app
 from ..config import get_global_config
 from ..console import pprint
 from ..connect_core import Connection
-from ..sync_core import SyncTask, SyncMode
+from ..sync_core import RemoteFileManager, SyncMode
 from ..utils.utils import show_sync_file_tree, get_file_md5
 from ..utils.sftp_utils import rfile_equal_lfile
 from ..sync_core.deploy_core import stop_last_pids
@@ -24,7 +24,7 @@ def push(
     try:
         config_modal = get_global_config()
         connection = Connection()
-        sync_task = SyncTask(connection)
+        sync_task = RemoteFileManager(connection)
         diff_files: list[pathlib.Path] = []
         if mode == 1:
             pprint(

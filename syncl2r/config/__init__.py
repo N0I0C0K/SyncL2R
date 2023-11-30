@@ -6,4 +6,4 @@ from .local import (
     FileSyncConfig,
 )
 
-from .constant import SyncL2R_l2r_Path, Data_Path, History_Log_Path
+from .constant import SyncL2R_l2r_Path, Remote_Config_Data_Path, History_Log_Path

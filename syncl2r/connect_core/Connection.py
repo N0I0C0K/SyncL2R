@@ -3,6 +3,7 @@ import paramiko
 import pathlib
 from shlex import quote
 from ..console import pprint
+from .utils import ConnectionFunction
 from ..config import get_global_config, ConnectConfig, AdvancedCommand
 from config.constant import Temp_Output_Path, Temp_Pids_Path
 
@@ -18,6 +19,8 @@ class Connection:
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh_client.load_system_host_keys()
         self.__sftp_client: paramiko.SFTPClient | None = None
+        self.__utils: ConnectionFunction | None = None
+
         pprint(
             f"[info]start link to [underline red]{self.config.ip}:{self.config.port}@{self.config.username}",
             end=" ",
@@ -57,6 +60,12 @@ class Connection:
         if self.__sftp_client is None:
             self.__sftp_client = self.ssh_client.open_sftp()
         return self.__sftp_client
+
+    @property
+    def utils(self) -> ConnectionFunction:
+        if self.__utils is None:
+            self.__utils = ConnectionFunction(self.ssh_client)
+        return self.__utils
 
     def __del__(self):
         self.ssh_client.close()
