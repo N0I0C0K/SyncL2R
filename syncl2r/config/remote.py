@@ -40,6 +40,9 @@ def load_remote_config() -> RemoteConfig:
 
 def save_remote_config():
     import yaml
+    from ..connect_core import get_global_connection
 
-    yaml.dump(get_remote_config())
-    pass
+    d_config = yaml.dump(get_remote_config())
+    conn = get_global_connection()
+
+    conn.utils.write_file(Remote_Config_Data_Path, d_config)

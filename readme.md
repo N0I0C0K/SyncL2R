@@ -144,8 +144,13 @@ events:                           # 事件只要填写默认每次都会执行�
 python -m pip install .
 ```
 
-**require**
+### require
 
-```shell
-python >= 3.10
-```
+#### 本地端
+
+- python >= 3.10
+
+#### 远程端
+
+- 支持ssh连接
+- **无需python环境**
