@@ -14,8 +14,8 @@ __config: RemoteConfig | None = None
 
 
 def get_remote_config() -> RemoteConfig:
+    global __config
     if __config is None:
-        global __config
         __config = load_remote_config()
     return __config
 

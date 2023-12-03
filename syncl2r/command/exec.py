@@ -28,4 +28,4 @@ def exec_action(
         pprint("[warn]no cmd need to exec, now quit")
         return
     conn = Connection(config_modal.connect_config)
-    conn.exec_cmd_list(cmd_list)
+    conn.cmd.exec_cmd_list(cmd_list)
