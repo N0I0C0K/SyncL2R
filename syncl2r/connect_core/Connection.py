@@ -5,7 +5,7 @@ from shlex import quote
 import paramiko
 from ..config.constant import Temp_Output_Path, Temp_Pids_Path
 
-from ..config import AdvancedCommand, ConnectConfig, get_global_config
+from ..config import ConnectConfig, get_global_config
 from ..console import pprint
 from .utils import ConnectionFunction
 from ..command_core import CommandExector

@@ -3,7 +3,7 @@ from .app import app
 from ..utils import pprint
 from ..config import get_global_config
 from ..connect_core import Connection
-from ..command_core import (
+from ..command_core.deploy_core import (
     stop_last_pids,
     get_remote_log,
     check_still_running,

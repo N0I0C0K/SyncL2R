@@ -7,7 +7,7 @@ from ..connect_core import Connection
 from ..sync_core import RemoteFileManager, SyncMode
 from ..utils.utils import show_sync_file_tree, get_file_md5
 from ..utils.sftp_utils import rfile_equal_lfile
-from ..command_core import stop_last_pids
+from ..command_core.deploy_core import stop_last_pids
 from ..bash import get_remote_tree
 
 
