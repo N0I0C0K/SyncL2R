@@ -59,6 +59,19 @@ class Connection:
         self.exec_command = self.ssh_client.exec_command
         set_global_connection(self)
 
+    def exec_command_sample(self, command: str) -> str:
+        """sample exec a command, without advanced function
+
+        Args:
+            command (str): cmd
+
+        Returns:
+            str: output
+        """
+        _, out, err = self.exec_command(command)
+        res = out.read().decode()
+        return res
+
     @property
     def sftp_client(self) -> paramiko.SFTPClient:
         if self.__sftp_client is None:

@@ -32,8 +32,13 @@ class FileSyncConfig(BaseModel):
         return False
 
     def __init__(self, **data):
+        from .constant import update_local_root_path, update_remote_root_path
+
         super().__init__(**data)
         self.root_path = os.path.abspath(self.root_path)
+
+        update_local_root_path(self.root_path)
+        update_remote_root_path(self.remote_root_path)
         # self.exclude.append("./.l2r")
 
 

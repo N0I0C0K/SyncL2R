@@ -1,10 +1,10 @@
 import pathlib
 from ..connect_core import Connection
 from ..config import get_global_config
-from ..bash import kill_pid_and_child
+
 from ..console import pprint
 
-from ..config.constant import Temp_Pids_Path, Temp_Output_Path
+from ..config.constant import Temp_Pids_Path, Temp_Output_Path, Remote_Root_Abs_Path
 
 
 def clear_last_pids(conn: Connection):
@@ -55,6 +55,9 @@ def stop_last_pids(conn: Connection):
     pids = get_pids(conn)
     if len(pids) == 0:
         return
+
+    from ..bash import kill_pid_and_child
+
     pprint(f"Will terminate the process and its child processes: {pids}")
 
     # # cmds = list(map(lambda v: f"kill -s 9 {v}", filter(lambda x: len(x) > 0, pids)))
@@ -63,3 +66,12 @@ def stop_last_pids(conn: Connection):
     # conn.exec_cmd_list(cmds, config.file_sync_config.remote_root_path)
     pprint(kill_pid_and_child(pids))
     clear_last_pids(conn)
+
+
+def store_log(conn: Connection):
+    from ..config.constant import History_Log_Path
+
+    his = Remote_Root_Abs_Path / History_Log_Path
+    t = conn.exec_command_sample(f"head {his.as_posix()} -c 1").removesuffix("\n")
+    conn.exec_command("cp ")
+    pass
