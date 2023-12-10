@@ -7,7 +7,7 @@ from ..config.constant import Temp_Output_Path, Temp_Pids_Path
 
 from ..config import ConnectConfig, get_global_config
 from ..console import pprint
-from .utils import ConnectionFunction
+from .utils import ConnectionFunction, SFTPFunction
 from ..command_core import CommandExector
 
 
@@ -23,6 +23,7 @@ class Connection:
         self.ssh_client.load_system_host_keys()
         self.__sftp_client: paramiko.SFTPClient | None = None
         self.__utils: ConnectionFunction | None = None
+        self.__sftp_utils: SFTPFunction | None = None
         self.__cmd: CommandExector | None = None
 
         pprint(
@@ -83,6 +84,12 @@ class Connection:
         if self.__utils is None:
             self.__utils = ConnectionFunction(self.ssh_client)
         return self.__utils
+
+    @property
+    def sftp_utils(self) -> SFTPFunction:
+        if self.__sftp_utils is None:
+            self.__sftp_utils = SFTPFunction(self.sftp_client, self.ssh_client)
+        return self.__sftp_utils
 
     @property
     def cmd(self) -> CommandExector:

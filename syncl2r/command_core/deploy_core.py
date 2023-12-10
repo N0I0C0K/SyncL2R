@@ -4,7 +4,7 @@ from ..config import get_global_config
 
 from ..console import pprint
 
-from ..config.constant import Temp_Pids_Path, Temp_Output_Path, Remote_Root_Abs_Path
+from ..config.constant import Temp_Pids_Path, Temp_Output_Path
 
 
 def clear_last_pids(conn: Connection):
@@ -66,12 +66,35 @@ def stop_last_pids(conn: Connection):
     # conn.exec_cmd_list(cmds, config.file_sync_config.remote_root_path)
     pprint(kill_pid_and_child(pids))
     clear_last_pids(conn)
+    store_log(conn)
 
 
 def store_log(conn: Connection):
-    from ..config.constant import History_Log_Path
+    import time
+    from ..config.constant import (
+        History_Log_Path,
+        Temp_Output_Path,
+        Remote_Root_Abs_Path,
+    )
 
-    his = Remote_Root_Abs_Path / History_Log_Path
-    t = conn.exec_command_sample(f"head {his.as_posix()} -c 1").removesuffix("\n")
-    conn.exec_command("cp ")
-    pass
+    out = Remote_Root_Abs_Path / Temp_Output_Path
+    t = conn.exec_command_sample(f"head {out.as_posix()} -n 1").removesuffix("\n")
+    s_t = time.localtime()
+    try:
+        s_t = time.strptime(t, r"%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        pass
+
+    his = (
+        Remote_Root_Abs_Path
+        / History_Log_Path
+        / f'{time.strftime(r"%Y%m%d%H%M%S", s_t)}.log'
+    )
+
+    his_dir = (Remote_Root_Abs_Path / History_Log_Path).as_posix()
+
+    if not conn.sftp_utils.exist_remote(his_dir):
+        conn.sftp_utils.mkdir(his_dir)
+
+    conn.exec_command(f"cp {out.as_posix()} {his.as_posix()}")
+    pprint(f"[green] store last output log to {his.as_posix()}")

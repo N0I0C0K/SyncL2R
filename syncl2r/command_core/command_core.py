@@ -26,9 +26,6 @@ class CommandExector:
         cmd_encode_list.append('echo "Your current remote path:"')
         cmd_encode_list.append("pwd")
 
-        # if there are more than one background process, then put their output in one log file
-        append_or_new = ">" if self.background_tasks_num == 0 else ">>"
-
         for cmd in cmd_list:
             if isinstance(cmd, str):
                 cmd_encode_list.append(
@@ -45,12 +42,16 @@ class CommandExector:
                     cmd_encode_list.append(
                         f"echo '[red][*]\"{quote(cmd.cmd)}\" (forever task) start execute'"
                     )
+
+                    # for the first background task, refresh the log file and write some info at the beginning of the file
                     if self.background_tasks_num == 0:
                         cmd_encode_list.append(
-                            f'echo {quote(time.strftime(r"%Y-%m-%d %H:%M:%S"))}'
+                            f'echo {quote(time.strftime(r"%Y-%m-%d %H:%M:%S"))} > {Temp_Output_Path.as_posix()}'
                         )
+
+                    # if there are more than one background process, then put their output in one log file
                     cmd_encode_list.append(
-                        f"nohup {cmd.cmd} {append_or_new} {Temp_Output_Path.as_posix()} 2{append_or_new}&1 & echo $! >> {Temp_Pids_Path.as_posix()}"
+                        f"nohup {cmd.cmd} >> {Temp_Output_Path.as_posix()} 2>&1 & echo $! >> {Temp_Pids_Path.as_posix()}"
                     )
                     self.background_tasks_num += 1
 
