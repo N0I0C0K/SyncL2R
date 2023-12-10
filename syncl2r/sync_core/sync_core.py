@@ -17,7 +17,7 @@ class SyncMode(enum.IntEnum):
     soft = 3  # 只上传新添加的文件
 
 
-class SyncTask:
+class RemoteFileManager:
     def __init__(
         self,
         connection: Connection,

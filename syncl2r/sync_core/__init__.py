@@ -1,1 +1,1 @@
-from .sync_task import SyncTask, SyncMode
+from .sync_core import RemoteFileManager, SyncMode

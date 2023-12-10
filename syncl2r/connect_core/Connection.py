@@ -1,9 +1,14 @@
-import typing
-import paramiko
 import pathlib
+import typing
 from shlex import quote
+
+import paramiko
+from ..config.constant import Temp_Output_Path, Temp_Pids_Path
+
+from ..config import ConnectConfig, get_global_config
 from ..console import pprint
-from ..config import get_global_config, ConnectConfig, AdvancedCommand
+from .utils import ConnectionFunction, SFTPFunction
+from ..command_core import CommandExector
 
 
 class Connection:
@@ -17,6 +22,10 @@ class Connection:
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh_client.load_system_host_keys()
         self.__sftp_client: paramiko.SFTPClient | None = None
+        self.__utils: ConnectionFunction | None = None
+        self.__sftp_utils: SFTPFunction | None = None
+        self.__cmd: CommandExector | None = None
+
         pprint(
             f"[info]start link to [underline red]{self.config.ip}:{self.config.port}@{self.config.username}",
             end=" ",
@@ -51,11 +60,42 @@ class Connection:
         self.exec_command = self.ssh_client.exec_command
         set_global_connection(self)
 
+    def exec_command_sample(self, command: str) -> str:
+        """sample exec a command, without advanced function
+
+        Args:
+            command (str): cmd
+
+        Returns:
+            str: output
+        """
+        _, out, err = self.exec_command(command)
+        res = out.read().decode()
+        return res
+
     @property
     def sftp_client(self) -> paramiko.SFTPClient:
         if self.__sftp_client is None:
             self.__sftp_client = self.ssh_client.open_sftp()
         return self.__sftp_client
+
+    @property
+    def utils(self) -> ConnectionFunction:
+        if self.__utils is None:
+            self.__utils = ConnectionFunction(self.ssh_client)
+        return self.__utils
+
+    @property
+    def sftp_utils(self) -> SFTPFunction:
+        if self.__sftp_utils is None:
+            self.__sftp_utils = SFTPFunction(self.sftp_client, self.ssh_client)
+        return self.__sftp_utils
+
+    @property
+    def cmd(self) -> CommandExector:
+        if self.__cmd is None:
+            self.__cmd = CommandExector(self.ssh_client)
+        return self.__cmd
 
     def __del__(self):
         self.ssh_client.close()
@@ -64,51 +104,6 @@ class Connection:
         print(
             f"connection({self.config.ip}:{self.config.port}@{self.config.username}) close"
         )
-
-    def exec_cmd_list(
-        self, cmd_list: list[str | AdvancedCommand] | list[str], pwd: str | None = None
-    ):
-        import time
-
-        cmd_encode_list: list[str] = []
-
-        if pwd:
-            cmd_encode_list.append(f"cd {quote(pwd)}")
-
-        cmd_encode_list.append('echo "Your current remote path:"')
-        cmd_encode_list.append("pwd")
-        for cmd in cmd_list:
-            if isinstance(cmd, str):
-                cmd_encode_list.append(
-                    f"echo '[green][*]\"{quote(cmd)}\" start execute'"
-                )
-                cmd_encode_list.append(cmd)
-            elif isinstance(cmd, AdvancedCommand):
-                if cmd.mode == "once":
-                    cmd_encode_list.append(
-                        f"echo '[green][*]\"{quote(cmd.cmd)}\" start execute'"
-                    )
-                    cmd_encode_list.append(cmd.cmd)
-                elif cmd.mode == "nohup":
-                    cmd_encode_list.append(
-                        f"echo '[red][*]\"{quote(cmd.cmd)}\" (forever task) start execute'"
-                    )
-                    cmd_encode_list.append(
-                        f"nohup {cmd.cmd} > .l2r/out.log 2>&1 & echo $! >> .l2r/pids.txt"
-                    )
-        cmd_encode_list.append("echo sdif92ja0lfas")
-        cmd_res = ";".join(cmd_encode_list)
-
-        start_time = time.time()
-        stdin, stdout, stderr = self.ssh_client.exec_command(cmd_res)
-        while stdout.readable():
-            line: str = stdout.readline()
-            if len(line) == 0:
-                continue
-            if line.startswith("sdif92ja0lfas"):
-                break
-            pprint(line, end="")
-        pprint(f"all command exec finished, use {time.time() - start_time:.2f} seconds")
 
 
 global_connection: Connection | None = None

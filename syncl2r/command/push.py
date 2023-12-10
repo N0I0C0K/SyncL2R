@@ -4,10 +4,10 @@ from .app import app
 from ..config import get_global_config
 from ..console import pprint
 from ..connect_core import Connection
-from ..sync_core import SyncTask, SyncMode
+from ..sync_core import RemoteFileManager, SyncMode
 from ..utils.utils import show_sync_file_tree, get_file_md5
 from ..utils.sftp_utils import rfile_equal_lfile
-from ..sync_core.deploy_core import stop_last_pids
+from ..command_core.deploy_core import stop_last_pids
 from ..bash import get_remote_tree
 
 
@@ -24,7 +24,7 @@ def push(
     try:
         config_modal = get_global_config()
         connection = Connection()
-        sync_task = SyncTask(connection)
+        sync_task = RemoteFileManager(connection)
         diff_files: list[pathlib.Path] = []
         if mode == 1:
             pprint(
@@ -78,7 +78,7 @@ def push(
         ):
             # invoke push start events
             pprint("[yellow]start exec start events")
-            connection.exec_cmd_list(
+            connection.cmd.exec_cmd_list(
                 config_modal.events.push_start_exec,
                 config_modal.file_sync_config.remote_root_path,
             )
@@ -98,7 +98,7 @@ def push(
         ):
             # invoke push finissh events
             pprint("[yellow]start exec [on_push_complete] events")
-            connection.exec_cmd_list(
+            connection.cmd.exec_cmd_list(
                 config_modal.events.push_complete_exec,
                 config_modal.file_sync_config.remote_root_path,
             )
@@ -110,7 +110,7 @@ def push(
             and config_modal.events.start is not None
         ):
             pprint("[yellow]start exec [start] events")
-            connection.exec_cmd_list(
+            connection.cmd.exec_cmd_list(
                 config_modal.events.start,
                 config_modal.file_sync_config.remote_root_path,
             )

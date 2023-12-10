@@ -6,7 +6,7 @@ import tempfile
 
 from ..connect_core import Connection
 from ..console import pprint
-from ..sync_core import SyncTask
+from ..sync_core import RemoteFileManager
 from .app import app
 
 
@@ -18,7 +18,7 @@ def show_diff(file: str = typer.Argument(help="Local file path (relative path)")
         pprint(f"[warn]{file} do not exist")
         return
     conn = Connection()
-    sync = SyncTask(conn)
+    sync = RemoteFileManager(conn)
     lf = pathlib.PurePath(file)
     [tmp_file, file_name] = tempfile.mkstemp()
     temp_file_open = os.fdopen(tmp_file, "wb")
