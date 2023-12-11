@@ -19,6 +19,7 @@ class CommandExector:
         from shlex import quote
         from syncl2r.config.constant import Temp_Output_Path, Temp_Pids_Path
 
+        # to let all command exec in the program root path, we zip all command in to a single command combian by &
         cmd_encode_list: list[str] = []
         if pwd:
             cmd_encode_list.append(f"cd {quote(pwd)}")
@@ -58,7 +59,7 @@ class CommandExector:
         # use separator to record process
         s_key = token_hex(8)
         cmd_encode_list.append(f"echo {s_key}")
-        cmd_res = ";".join(cmd_encode_list)
+        cmd_res = "&&".join(cmd_encode_list)
 
         start_time = time.time()
         stdin, stdout, stderr = self.ssh_client.exec_command(cmd_res)

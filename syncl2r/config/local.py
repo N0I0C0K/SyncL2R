@@ -45,6 +45,7 @@ class FileSyncConfig(BaseModel):
 class AdvancedCommand(BaseModel):
     cmd: str
     mode: typing.Literal["nohup", "once"] = "once"
+    location: typing.Literal["local", "remote"] = "remote"
 
 
 class EventConfig(BaseModel):
