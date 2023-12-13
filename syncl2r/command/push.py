@@ -25,7 +25,12 @@ def push(
         config_modal = get_global_config()
         connection = Connection()
         sync_task = RemoteFileManager(connection)
+
+        # store diffrent file's Path obj
         diff_files: list[pathlib.Path] = []
+        # store diffrent file's relative path string.This is actually redundant, but you can do one less calculation
+        diff_files_rp: list[str] = []
+
         if mode == 1:
             pprint(
                 "[danger]Pattern 1 will delete all the files in remote directory brfore upload"
@@ -58,9 +63,10 @@ def push(
                     return True
                 if not path.is_dir():
                     diff_files.append(path)
-                else:
-                    if rp not in dir_set:
-                        diff_files.append(path)
+                    diff_files_rp.append(rp)
+                # else:
+                #     if rp not in dir_set:
+                #         diff_files.append(path)
                 return False
 
             show_sync_file_tree(config_modal.file_sync_config, esc_equal_file)

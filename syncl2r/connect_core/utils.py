@@ -40,6 +40,8 @@ class SFTPFunction:
         self.sftp_client = sftp_client
         self.ssh_client = ssh_client
 
+        self.stat = self.sftp_client.stat
+
     def get_file_type(self, file_stat: paramiko.SFTPAttributes) -> FileType | None:
         file_mode = file_stat.st_mode >> 12  # type: ignore
         for name in FileType:
