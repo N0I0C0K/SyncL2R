@@ -17,7 +17,11 @@ class CommandExector:
         import time
         from secrets import token_hex
         from shlex import quote
-        from syncl2r.config.constant import Temp_Output_Path, Temp_Pids_Path
+        from syncl2r.config.constant import (
+            Temp_Output_Path,
+            Temp_Pids_Path,
+            Remote_Root_Abs_Path,
+        )
 
         # to let all command exec in the program root path, we zip all command in to a single command combian by &
         cmd_encode_list: list[str] = []
@@ -47,12 +51,12 @@ class CommandExector:
                     # for the first background task, refresh the log file and write some info at the beginning of the file
                     if self.background_tasks_num == 0:
                         cmd_encode_list.append(
-                            f'echo {quote(time.strftime(r"%Y-%m-%d %H:%M:%S"))} > {Temp_Output_Path.as_posix()}'
+                            f'echo {quote(time.strftime(r"%Y-%m-%d %H:%M:%S"))} > {(Remote_Root_Abs_Path/Temp_Output_Path).as_posix()}'
                         )
 
                     # if there are more than one background process, then put their output in one log file
                     cmd_encode_list.append(
-                        f"nohup {cmd.cmd} >> {Temp_Output_Path.as_posix()} 2>&1 & echo $! >> {Temp_Pids_Path.as_posix()}"
+                        f"nohup {cmd.cmd} >> {(Remote_Root_Abs_Path/Temp_Output_Path).as_posix()} 2>&1 & echo $! >> {(Remote_Root_Abs_Path/Temp_Pids_Path).as_posix()}"
                     )
                     self.background_tasks_num += 1
 
@@ -64,15 +68,17 @@ class CommandExector:
         start_time = time.time()
         stdin, stdout, stderr = self.ssh_client.exec_command(cmd_res)
 
+        # count zero len size
         zero_count = 0
         while stdout.readable():
             line: str = stdout.readline()
 
+            # 1000 is a save count
             if zero_count >= 1000:
-                pprint("[red]some error happen!")
                 break
 
             if len(line) == 0:
+                # Under my tests, if there are too many white space read from "readline" function, it means command execute failed
                 zero_count += 1
                 continue
 
