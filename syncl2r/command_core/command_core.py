@@ -63,11 +63,25 @@ class CommandExector:
 
         start_time = time.time()
         stdin, stdout, stderr = self.ssh_client.exec_command(cmd_res)
+
+        zero_count = 0
         while stdout.readable():
             line: str = stdout.readline()
+
+            if zero_count >= 1000:
+                pprint("[red]some error happen!")
+                break
+
             if len(line) == 0:
+                zero_count += 1
                 continue
+
             if line.startswith(s_key):
                 break
             pprint(line, end="")
+
+        if zero_count >= 1000:
+            error_info = stderr.read().decode()
+            pprint(f"[red]{error_info}")
+
         pprint(f"all command exec finished, use {time.time() - start_time:.2f} seconds")
