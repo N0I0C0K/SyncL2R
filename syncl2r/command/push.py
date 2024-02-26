@@ -11,7 +11,10 @@ from ..command_core.deploy_core import stop_last_pids
 from ..bash import get_remote_tree
 
 
-@app.command(name="push", help="push file to remote")
+@app.command(
+    name="push",
+    help="push files(which defined in .l2r config) to remote, if you want upload only few file, please use <upload> command",
+)
 def push(
     mode: int = typer.Option(
         2,

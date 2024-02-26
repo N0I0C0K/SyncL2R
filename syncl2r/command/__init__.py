@@ -7,6 +7,7 @@ from .shell import link_shell
 from .show import show_files
 from .diff import show_diff
 from .remote import remote_cmd
+from .upload import upload
 from .test import test
 
 

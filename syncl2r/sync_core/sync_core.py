@@ -35,7 +35,9 @@ class RemoteFileManager:
         self.upload(self.config.root_path, self.config.remote_root_path, mode=mode)
         pprint(f"[green]upload complete [red]{self.total_upload_file}[/] file upload")
 
-    def push_files(self, files: list[pathlib.Path], *, mode: SyncMode):
+    def push_files(
+        self, files: list[pathlib.Path], *, mode: SyncMode = SyncMode.normal
+    ):
         self.total_upload_file = 0
         r_path = pathlib.PurePath(self.config.remote_root_path)
         for file in files:
