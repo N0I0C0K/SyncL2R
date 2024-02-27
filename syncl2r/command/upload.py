@@ -2,7 +2,7 @@ import typer
 from .app import app
 from ..console import pprint
 from ..connect_core import Connection
-from ..sync_core import RemoteFileManager
+from ..sync_core import RemoteFileManager, SyncMode
 from pathlib import Path
 
 
@@ -16,12 +16,15 @@ def upload(
     # config = get_global_config()
     from ..config.constant import Local_Root_Abs_Path
 
-    conn = Connection()
-    sync_task = RemoteFileManager(conn)
+    try:
+        conn = Connection()
+        sync_task = RemoteFileManager(conn)
 
-    file_path = list(map(lambda x: Path(Local_Root_Abs_Path / x), files))
-    pprint(f"files to upload")
-    for file in file_path:
-        pprint(f"[red]{file.as_posix()}[/]")
-    if typer.confirm("continue?"):
-        sync_task.push_files(file_path)
+        file_path = list(map(lambda x: Path(Local_Root_Abs_Path / x), files))
+        pprint(f"files to upload")
+        for file in file_path:
+            pprint(f"[red]{file.as_posix()}[/]")
+        if typer.confirm("continue?", abort=True):
+            sync_task.push_files(file_path, mode=SyncMode.normal, use_exclude=False)
+    except Exception as e:
+        pprint(f"[danger]error happen in upload, err:{e}")
