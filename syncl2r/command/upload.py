@@ -17,7 +17,7 @@ def upload(
     from syncl2r.config.constant import Local_Root_Abs_Path
 
     try:
-        conn = Connection()
+        conn = Connection.default_connection()
         sync_task = RemoteFileManager(conn)
 
         file_path = list(map(lambda x: Path(Local_Root_Abs_Path / x), files))

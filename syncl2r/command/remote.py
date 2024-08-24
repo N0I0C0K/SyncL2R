@@ -17,7 +17,7 @@ app.add_typer(remote_cmd)
 
 @remote_cmd.command(name="stop", help="stop remote running process")
 def stop_remote():
-    conn = Connection()
+    conn = Connection.default_connection()
     stop_last_pids(conn)
 
     cfg = get_global_config()
@@ -29,7 +29,7 @@ def stop_remote():
 def start_remote():
     cfg = get_global_config()
     if cfg.events is not None and cfg.events.start is not None:
-        conn = Connection()
+        conn = Connection.default_connection()
         if check_still_running(conn):
             return pprint("[red]last process is still running")
         store_log(conn)
@@ -40,7 +40,7 @@ def start_remote():
 def restart_remote():
     cfg = get_global_config()
     if cfg.events is not None and cfg.events.start is not None:
-        conn = Connection()
+        conn = Connection.default_connection()
         stop_last_pids(conn)
         conn.cmd.exec_cmd_list(cfg.events.start, cfg.file_sync_config.remote_root_path)
 
@@ -54,14 +54,14 @@ def log_remote(
         help="add additional command to cat remote log file, Use the | pipe splicing command",
     )
 ):
-    conn = Connection()
+    conn = Connection.default_connection()
     log = get_remote_log(conn, additional_cmds)
     pprint(log)
 
 
 @remote_cmd.command(name="state", help="get remote running state")
 def get_state():
-    conn = Connection()
+    conn = Connection.default_connection()
     state = check_still_running(conn)
     if state:
         pprint("Remote running state: [green]running")

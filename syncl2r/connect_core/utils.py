@@ -1,6 +1,7 @@
-from pathlib import PurePath
-import paramiko
 import enum
+import paramiko
+
+from pathlib import PurePath
 from paramiko import SSHClient, SFTPClient
 
 

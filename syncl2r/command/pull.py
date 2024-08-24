@@ -12,7 +12,7 @@ def pull(
     ),
 ):
     try:
-        connection = Connection()
+        connection = Connection.default_connection()
         sync_task = RemoteFileManager(connection)
         files = ["."] if files is None or len(files) == 0 else files
         for file in files:

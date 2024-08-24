@@ -3,7 +3,6 @@ import typing
 from shlex import quote
 
 import paramiko
-from syncl2r.config.constant import Temp_Output_Path, Temp_Pids_Path
 
 from syncl2r.config import ConnectConfig, get_global_config
 from syncl2r.console import pprint
@@ -12,10 +11,10 @@ from syncl2r.command_core import CommandExector
 
 
 class Connection:
-    def __init__(self, config: ConnectConfig | None = None) -> None:
-        self.config = (
-            config if config is not None else get_global_config().connect_config
-        )
+    _global_connect = None
+
+    def __init__(self, config: ConnectConfig) -> None:
+        self.config = config
         self.ssh_client = paramiko.SSHClient()
         self.close = self.ssh_client.close
 
@@ -27,13 +26,13 @@ class Connection:
         self.__cmd: CommandExector | None = None
 
         pprint(
-            f"[info]start link to [underline red]{self.config.ip}:{self.config.port}@{self.config.username}",
+            f"[info]start link to [underline red]{self.config.host}:{self.config.port}@{self.config.username}",
             end=" ",
         )
         try:
             if self.config.password is not None:
                 self.ssh_client.connect(
-                    self.config.ip,
+                    self.config.host,
                     self.config.port,
                     self.config.username,
                     self.config.password,
@@ -46,13 +45,13 @@ class Connection:
                 with key_file.open() as f:
                     pkey = paramiko.RSAKey.from_private_key(f)
                 self.ssh_client.connect(
-                    self.config.ip, self.config.port, self.config.username, pkey=pkey
+                    self.config.host, self.config.port, self.config.username, pkey=pkey
                 )
             else:
                 raise ValueError("connection config is invaild")
         except TimeoutError:
             pprint(
-                f"[danger.high]can not connect to the {self.config.ip}:{self.config.port}!"
+                f"[danger.high]can not connect to the {self.config.host}:{self.config.port}!"
             )
             raise
         else:
@@ -97,12 +96,18 @@ class Connection:
             self.__cmd = CommandExector(self.ssh_client)
         return self.__cmd
 
+    @classmethod
+    def default_connection(cls) -> typing.Self:
+        if cls._global_connect is None:
+            cls._global_connect = cls(get_global_config().connect_config)
+        return cls._global_connect
+
     def __del__(self):
         self.ssh_client.close()
         if self.__sftp_client is not None:
             self.__sftp_client.close()
         print(
-            f"connection({self.config.ip}:{self.config.port}@{self.config.username}) close"
+            f"connection({self.config.host}:{self.config.port}@{self.config.username}) close"
         )
 
 

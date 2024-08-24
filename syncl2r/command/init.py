@@ -1,31 +1,21 @@
 import os
 import re
-import typer
 import pathlib
+import typer
+
+from typing import Literal
+
 from .app import app
-from syncl2r.config import load_config
+from syncl2r.config import load_config, save_config, Config_Path
 from syncl2r.console import pprint
 from syncl2r.connect_core import Connection
 
 
 @app.command(name="init", help="init config file for current path")
 def init(
-    remote_url: str = typer.Option(
-        None,
-        "--remote-url",
-        "-u",
-        help="the link to the remote ssh host. like => username:password@ip / username:password@ip:port / username@ip:port /username@ip",
-    ),
-    key_name: str = typer.Option(
-        None,
-        help="Set this item to enable key login, private key link to ~/.ssh/[key_name]",
-    ),
-    remote_path: str = typer.Option(
-        None,
-        "--remote-path",
-        "-rp",
-        help="remote path to sync, default same as local dir name",
-    ),
+    host: str = typer.Option(prompt="host to connect"),
+    port: str = typer.Option("22", prompt="enter port, default to 22"),
+    username: str = typer.Option(prompt="user name for ssh connect"),
     sync_path: str = typer.Option(
         ".", "--local-path", "-lp", help="local path to sync"
     ),
@@ -34,11 +24,21 @@ def init(
         help="test connection before write config file, Used to check whether the connection configuration is correct",
     ),
 ):
+    mode: Literal["password", "key"] = typer.prompt(
+        "which mode do you want use? [password]/[key]", default="password"
+    )
+    key_name: str = ""
+    password: str = ""
+    if mode == "key":
+        key_name = typer.prompt("ssh private key to connect, link to ~/.ssh/[key_name]")
+    elif mode == "password":
+        password = typer.prompt("enter password", hide_input=True)
+    else:
+        raise typer.Abort
     if not os.path.exists("./.l2r"):
         os.makedirs(".l2r")
-    conifg_file = os.path.abspath("./.l2r/config.l2r.yaml")
-    if os.path.exists(conifg_file):
-        replace = typer.confirm(f"{conifg_file} already exist, do you want to replace?")
+    if os.path.exists(Config_Path):
+        replace = typer.confirm(f"{Config_Path} already exist, do you want to replace?")
         if not replace:
             raise typer.Abort()
 
@@ -49,69 +49,38 @@ def init(
         pprint(f"[red]{sync_dir} does not exist")
         return
 
-    if remote_path is None:
-        remote_path = f"{sync_dir_name}"
-
-    init_data = {
-        "connect_config": {},
-        "file_sync_config": {
-            "root_path": sync_dir,
-            "remote_root_path": remote_path,
-            "exclude": [],
-        },
-        "events": {"push_complete_exec": [], "push_start_exec": []},
-        "actions": [],
-    }
-
-    # check remote connection config is alright
-    ip: str | None = None
-    port: str | None = None
-    if remote_url is not None:
-        res = re.match(r"(.*?)(:(.*?))?@([0-9,\.]*):?([0-9]*)?", remote_url)
-        if res is None:
-            pprint(f"[danger]remote url({remote_url}) is invalid")
-            return
-        username, _, pwd, ip, port = res.groups()
-        init_data["connect_config"] |= {"username": username}
-        if pwd and pwd != "":
-            init_data["connect_config"] |= {"password": pwd}
-
-    if ip is None:
-        ip = ""
-
-    if key_name is not None:
+    if key_name:
         key_file = pathlib.Path.home() / ".ssh" / key_name
         if not key_file.exists():
             raise ValueError(f"key file({key_file.as_posix()}) is not exist")
-        init_data["connect_config"] |= {"key_name": key_name}
 
-    if port is None or port == "":
-        port = "22"
+    remote_path = f"{sync_dir_name}"
 
-    init_data["connect_config"] |= {"ip": ip, "port": int(port)}
-
-    load_config(init_data)
+    init_data = {
+        "connect_config": {
+            "host": host,
+            "username": username,
+            "password": password,
+            "port": port,
+            "key_name": key_name,
+        },
+        "file_sync_config": {
+            "root_path": sync_dir,
+            "remote_root_path": remote_path,
+        },
+        "events": {"push_complete_exec": [], "push_start_exec": []},
+    }
+    config = load_config(init_data)
 
     if test_connect:
         try:
-            conn = Connection()
+            conn = Connection.default_connection()
         except Exception as e:
             pprint(
-                f"[danger.high]exception happend during connecting to the host {remote_url}, error info: {e}"
+                f"[danger.high]exception happend during connecting to the host, error info: {e}"
             )
             return
         else:
             conn.close()
 
-    if os.path.exists(conifg_file):
-        pprint(f"[red]{conifg_file} already exist! now relpace")
-
-    with open(conifg_file, "w+", encoding="utf-8") as file:
-        import yaml
-
-        try:
-            from yaml import CDumper as Dumper
-        except:
-            from yaml import Dumper
-
-        yaml.dump(init_data, file, Dumper)
+    save_config(config)

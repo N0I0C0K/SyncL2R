@@ -17,7 +17,6 @@ def show_files(
     if not show_remote:
         show_sync_file_tree(global_config.file_sync_config)
     else:
-        conn = Connection()
         from syncl2r.console import pprint
         from rich.padding import Padding
 

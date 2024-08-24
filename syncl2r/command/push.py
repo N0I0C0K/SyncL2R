@@ -26,7 +26,7 @@ def push(
 ):
     try:
         config_modal = get_global_config()
-        connection = Connection()
+        connection = Connection.default_connection()
         sync_task = RemoteFileManager(connection)
 
         # store diffrent file's Path obj

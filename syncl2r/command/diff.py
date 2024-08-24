@@ -17,7 +17,7 @@ def show_diff(file: str = typer.Argument(help="Local file path (relative path)")
     if not os.path.exists(file):
         pprint(f"[warn]{file} do not exist")
         return
-    conn = Connection()
+    conn = Connection.default_connection()
     sync = RemoteFileManager(conn)
     show_diff_inter(file, sync, conn)
 

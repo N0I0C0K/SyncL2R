@@ -14,7 +14,7 @@ def link_shell(
     from syncl2r.utils.ssh_utils import channel_recv
 
     try:
-        connection = Connection()
+        connection = Connection.default_connection()
         ssh_client = connection.ssh_client
     except Exception as e:
         pprint(f"[danger]connect to remote failed, error info: {e}")
