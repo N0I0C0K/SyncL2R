@@ -1,8 +1,8 @@
 import typer
 from .app import app
-from ..console import pprint
-from ..connect_core import Connection
-from ..sync_core import RemoteFileManager
+from syncl2r.console import pprint
+from syncl2r.connect_core import Connection
+from syncl2r.sync_core import RemoteFileManager
 
 
 @app.command(name="pull", help="pull files from remote")

@@ -3,9 +3,9 @@ import re
 import typer
 import pathlib
 from .app import app
-from ..config import load_config
-from ..console import pprint
-from ..connect_core import Connection
+from syncl2r.config import load_config
+from syncl2r.console import pprint
+from syncl2r.connect_core import Connection
 
 
 @app.command(name="init", help="init config file for current path")

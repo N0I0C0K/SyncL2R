@@ -1,10 +1,10 @@
 import pathlib
-from ..connect_core import Connection
-from ..config import get_global_config
+from syncl2r.connect_core import Connection
+from syncl2r.config import get_global_config
 
-from ..console import pprint
+from syncl2r.console import pprint
 
-from ..config.constant import Temp_Pids_Path, Temp_Output_Path
+from syncl2r.config.constant import Temp_Pids_Path, Temp_Output_Path
 
 
 def clear_last_pids(conn: Connection):
@@ -56,7 +56,7 @@ def stop_last_pids(conn: Connection):
     if len(pids) == 0:
         return
 
-    from ..bash import kill_pid_and_child
+    from syncl2r.bash import kill_pid_and_child
 
     pprint(f"Will terminate the process and its child processes: {pids}")
 
@@ -71,7 +71,7 @@ def stop_last_pids(conn: Connection):
 
 def store_log(conn: Connection):
     import time
-    from ..config.constant import (
+    from syncl2r.config.constant import (
         History_Log_Path,
         Temp_Output_Path,
         Remote_Root_Abs_Path,

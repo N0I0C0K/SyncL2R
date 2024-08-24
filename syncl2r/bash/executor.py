@@ -1,8 +1,8 @@
 import shlex
 from secrets import token_hex
-from ..console import pprint
-from ..config import get_global_config
-from ..connect_core import get_global_connection, Connection
+from syncl2r.console import pprint
+from syncl2r.config import get_global_config
+from syncl2r.connect_core import get_global_connection, Connection
 
 
 def execute_bash(

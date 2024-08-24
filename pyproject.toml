@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "syncl2r"
+version = "0.1.0"
+description = "sync local and remote files"
+authors = ["noiocok"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.8.2"
+typer = "^0.12.4"
+pyyaml = "^6.0.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

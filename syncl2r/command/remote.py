@@ -1,9 +1,9 @@
 import typer
 from .app import app
-from ..utils import pprint
-from ..config import get_global_config
-from ..connect_core import Connection
-from ..command_core.deploy_core import (
+from syncl2r.utils import pprint
+from syncl2r.config import get_global_config
+from syncl2r.connect_core import Connection
+from syncl2r.command_core.deploy_core import (
     stop_last_pids,
     get_remote_log,
     check_still_running,

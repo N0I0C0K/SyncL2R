@@ -1,8 +1,8 @@
 import typer
 from .app import app
-from ..config import get_global_config
-from ..console import pprint
-from ..connect_core import Connection
+from syncl2r.config import get_global_config
+from syncl2r.console import pprint
+from syncl2r.connect_core import Connection
 
 
 @app.command(name="exec", help="exec action")

@@ -5,9 +5,9 @@ import subprocess
 import tempfile
 
 from .app import app
-from ..connect_core import Connection
-from ..console import pprint
-from ..sync_core import RemoteFileManager
+from syncl2r.connect_core import Connection
+from syncl2r.console import pprint
+from syncl2r.sync_core import RemoteFileManager
 
 
 @app.command(
@@ -23,7 +23,7 @@ def show_diff(file: str = typer.Argument(help="Local file path (relative path)")
 
 
 def show_diff_inter(file: str, sync: RemoteFileManager, conn: Connection):
-    from ..config.constant import Remote_Root_Abs_Path
+    from syncl2r.config.constant import Remote_Root_Abs_Path
 
     lf = pathlib.PurePath(file)
     rf = Remote_Root_Abs_Path / lf

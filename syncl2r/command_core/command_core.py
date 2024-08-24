@@ -1,7 +1,7 @@
 from paramiko import SSHClient
 from syncl2r.config.local import AdvancedCommand
 
-from ..console import pprint
+from syncl2r.console import pprint
 
 
 class CommandExector:

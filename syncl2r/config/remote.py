@@ -21,7 +21,7 @@ def get_remote_config() -> RemoteConfig:
 
 
 def load_remote_config() -> RemoteConfig:
-    from ..connect_core import get_global_connection
+    from syncl2r.connect_core import get_global_connection
     from .local import get_global_config
 
     conn = get_global_connection()
@@ -40,7 +40,7 @@ def load_remote_config() -> RemoteConfig:
 
 def save_remote_config():
     import yaml
-    from ..connect_core import get_global_connection
+    from syncl2r.connect_core import get_global_connection
 
     d_config = yaml.dump(get_remote_config())
     conn = get_global_connection()

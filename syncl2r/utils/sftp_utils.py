@@ -96,7 +96,7 @@ def exist_remote(file_path: str, sftp_client: paramiko.SFTPClient) -> bool:
 
 
 def show_remote_file_tree(path: str, sftp: paramiko.SFTPClient):
-    from ..console import pprint
+    from syncl2r.console import pprint
     from rich.padding import Padding
 
     pprint(

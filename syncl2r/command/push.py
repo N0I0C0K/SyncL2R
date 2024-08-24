@@ -1,14 +1,14 @@
 import typer
 import pathlib
 from .app import app
-from ..config import get_global_config
-from ..console import pprint
-from ..connect_core import Connection
-from ..sync_core import RemoteFileManager, SyncMode
-from ..utils.utils import show_sync_file_tree, get_file_md5
-from ..utils.sftp_utils import rfile_equal_lfile
-from ..command_core.deploy_core import stop_last_pids
-from ..bash import get_remote_tree
+from syncl2r.config import get_global_config
+from syncl2r.console import pprint
+from syncl2r.connect_core import Connection
+from syncl2r.sync_core import RemoteFileManager, SyncMode
+from syncl2r.utils.utils import show_sync_file_tree, get_file_md5
+from syncl2r.utils.sftp_utils import rfile_equal_lfile
+from syncl2r.command_core.deploy_core import stop_last_pids
+from syncl2r.bash import get_remote_tree
 
 
 @app.command(

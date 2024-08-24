@@ -1,8 +1,8 @@
 import typer
 from .app import app
-from ..console import pprint
-from ..connect_core import Connection
-from ..sync_core import RemoteFileManager, SyncMode
+from syncl2r.console import pprint
+from syncl2r.connect_core import Connection
+from syncl2r.sync_core import RemoteFileManager, SyncMode
 from pathlib import Path
 
 
@@ -14,7 +14,7 @@ def upload(
     files: list[str] = typer.Argument(help="files to push, must to be not none"),
 ):
     # config = get_global_config()
-    from ..config.constant import Local_Root_Abs_Path
+    from syncl2r.config.constant import Local_Root_Abs_Path
 
     try:
         conn = Connection()

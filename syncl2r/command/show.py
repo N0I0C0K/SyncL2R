@@ -1,10 +1,10 @@
 import typer
 from .app import app
-from ..config import get_global_config
-from ..utils.utils import show_sync_file_tree
-from ..connect_core import Connection
-from ..utils.sftp_utils import show_remote_file_tree, remote_file_list_to_tree
-from ..bash import get_remote_tree
+from syncl2r.config import get_global_config
+from syncl2r.utils.utils import show_sync_file_tree
+from syncl2r.connect_core import Connection
+from syncl2r.utils.sftp_utils import show_remote_file_tree, remote_file_list_to_tree
+from syncl2r.bash import get_remote_tree
 
 
 @app.command(name="show", help="show file struct for the current sync file")
@@ -18,7 +18,7 @@ def show_files(
         show_sync_file_tree(global_config.file_sync_config)
     else:
         conn = Connection()
-        from ..console import pprint
+        from syncl2r.console import pprint
         from rich.padding import Padding
 
         tree = remote_file_list_to_tree(

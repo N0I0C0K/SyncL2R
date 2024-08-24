@@ -3,7 +3,7 @@ import json
 import os
 import typing
 
-from ..console import pprint
+from syncl2r.console import pprint
 from pydantic import BaseModel
 
 

@@ -11,7 +11,7 @@ class FileType(enum.IntFlag):
 
 def path_to_absolute(path: PurePath) -> PurePath:
     if not path.is_absolute():
-        from ..config import get_global_config
+        from syncl2r.config import get_global_config
 
         config = get_global_config()
         path = PurePath(config.file_sync_config.remote_root_path) / path
@@ -69,7 +69,7 @@ class SFTPFunction:
             return None
 
     def rfile_equal_lfile(self, remote_file_path: str, local_file_path: str) -> bool:
-        from ..utils.utils import get_file_md5
+        from syncl2r.utils.utils import get_file_md5
 
         return get_file_md5(local_file_path) == self.get_remote_file_md5(
             remote_file_path

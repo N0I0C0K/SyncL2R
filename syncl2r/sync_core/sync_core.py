@@ -4,11 +4,11 @@ import enum
 
 from io import BufferedWriter
 
-from ..connect_core import Connection
-from ..utils import sftp_utils, utils
-from ..console import pprint
+from syncl2r.connect_core import Connection
+from syncl2r.utils import sftp_utils, utils
+from syncl2r.console import pprint
 from rich import padding, progress
-from ..config import get_global_config, FileSyncConfig
+from syncl2r.config import get_global_config, FileSyncConfig
 
 
 class SyncMode(enum.IntEnum):

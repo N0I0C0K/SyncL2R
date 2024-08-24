@@ -1,7 +1,7 @@
 import sys
 import typer
-from ..console import pprint
-from ..version import version
+from syncl2r.console import pprint
+from syncl2r.version import version
 
 help_text = r"""
    _____                      __    ___    ____ 

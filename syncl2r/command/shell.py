@@ -1,7 +1,7 @@
 import typer
 from .app import app
-from ..console import pprint
-from ..connect_core import Connection
+from syncl2r.console import pprint
+from syncl2r.connect_core import Connection
 
 
 @app.command(name="shell", help="open shell to remote")
@@ -11,7 +11,7 @@ def link_shell(
     )
 ):
     import time
-    from ..utils.ssh_utils import channel_recv
+    from syncl2r.utils.ssh_utils import channel_recv
 
     try:
         connection = Connection()

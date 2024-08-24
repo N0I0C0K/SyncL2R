@@ -7,8 +7,8 @@ from rich.markup import escape
 from rich.text import Text
 from rich.tree import Tree
 from rich.padding import Padding
-from ..console import pprint
-from ..config import FileSyncConfig
+from syncl2r.console import pprint
+from syncl2r.config import FileSyncConfig
 
 
 def walk_directory(

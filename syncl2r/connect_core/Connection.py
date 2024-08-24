@@ -3,12 +3,12 @@ import typing
 from shlex import quote
 
 import paramiko
-from ..config.constant import Temp_Output_Path, Temp_Pids_Path
+from syncl2r.config.constant import Temp_Output_Path, Temp_Pids_Path
 
-from ..config import ConnectConfig, get_global_config
-from ..console import pprint
+from syncl2r.config import ConnectConfig, get_global_config
+from syncl2r.console import pprint
 from .utils import ConnectionFunction, SFTPFunction
-from ..command_core import CommandExector
+from syncl2r.command_core import CommandExector
 
 
 class Connection:
