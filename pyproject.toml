@@ -17,3 +17,6 @@ paramiko = "^3.4.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+sync = syncl2r.entry_point

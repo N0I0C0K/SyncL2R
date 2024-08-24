@@ -10,20 +10,24 @@ from rich.padding import Padding
 from syncl2r.console import pprint
 from syncl2r.config import FileSyncConfig
 
+MAX_CHILD_NUM = 20
+
 
 def walk_directory(
     directory: pathlib.Path,
     tree: Tree,
     *,
     escape_func: typing.Callable[[pathlib.Path], bool] | None = None,
+    max_child_num: int = MAX_CHILD_NUM,
 ) -> None:
     """Recursively build a Tree with directory contents."""
     # Sort dirs first then by filename
     paths = sorted(
         pathlib.Path(directory).iterdir(),
-        key=lambda path: (path.name.lower()),
+        key=lambda path: (path.is_file(), path.name.lower()),
     )
-    for path in paths:
+    child_file_num = len(paths)
+    for path in paths[:max_child_num]:
         if escape_func and escape_func(path):
             continue
         if path.is_dir():
@@ -35,7 +39,12 @@ def walk_directory(
                 expanded=tree.expanded,
                 highlight=tree.highlight,
             )
-            walk_directory(path, tre, escape_func=escape_func)
+            walk_directory(
+                path,
+                tre,
+                escape_func=escape_func,
+                max_child_num=int(max_child_num * 3 / 4),
+            )
             if len(tre.children) > 0:
                 tree.children.append(tre)
 
@@ -47,17 +56,21 @@ def walk_directory(
             text_filename.append(f" ({decimal(file_size)})", "blue")
             icon = "📄 "
             tree.add(Text(icon) + text_filename)
+    if child_file_num > max_child_num:
+        tree.add(Text(f"...{child_file_num-max_child_num} files more"))
 
 
 def get_dir_tree(
-    path: str, escape_func: typing.Callable[[pathlib.Path], bool] | None = None
+    path: str,
+    escape_func: typing.Callable[[pathlib.Path], bool] | None = None,
+    cfg=None,
 ) -> Tree:
     path = os.path.abspath(path)
     tree = Tree(
         f":open_file_folder: [link file://{path}]{path}",
         guide_style="bold bright_blue",
     )
-    walk_directory(pathlib.Path(path), tree, escape_func=escape_func)
+    walk_directory(pathlib.Path(path), tree, escape_func=escape_func, max_child_num=40)
     return tree
 
 
