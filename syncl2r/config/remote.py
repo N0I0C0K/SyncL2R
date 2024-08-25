@@ -21,10 +21,9 @@ def get_remote_config() -> RemoteConfig:
 
 
 def load_remote_config() -> RemoteConfig:
-    from syncl2r.connect_core import get_global_connection
-    from .local import get_global_config
+    from syncl2r.connect_core import Connection
 
-    conn = get_global_connection()
+    conn = Connection.default_connection()
     data = conn.utils.read_file(Remote_Config_Data_Path)
     if len(data) < 4:
         return RemoteConfig.default()
@@ -40,9 +39,9 @@ def load_remote_config() -> RemoteConfig:
 
 def save_remote_config():
     import yaml
-    from syncl2r.connect_core import get_global_connection
+    from syncl2r.connect_core import Connection
 
     d_config = yaml.dump(get_remote_config())
-    conn = get_global_connection()
+    conn = Connection.default_connection()
 
     conn.utils.write_file(Remote_Config_Data_Path, d_config)

@@ -2,7 +2,7 @@ import shlex
 from secrets import token_hex
 from syncl2r.console import pprint
 from syncl2r.config import get_global_config
-from syncl2r.connect_core import get_global_connection, Connection
+from syncl2r.connect_core import Connection
 
 
 def execute_bash(
@@ -11,7 +11,7 @@ def execute_bash(
     if pwd is None:
         config = get_global_config()
         pwd = config.file_sync_config.remote_root_path
-    conn = get_global_connection() if conn is None else conn
+    conn = Connection.default_connection()
     sh_file = f".syncl2r_bash_{token_hex(8)}.sh"
     sh = shlex.quote(sh % args)
     conn.ssh_client.exec_command(f"cd {pwd}; echo {sh} > {sh_file}")
@@ -30,7 +30,7 @@ def execute_cmd(cmd: str, pwd: str | None = None) -> str:
     if pwd is None:
         config = get_global_config()
         pwd = config.file_sync_config.remote_root_path
-    conn = get_global_connection()
+    conn = Connection.default_connection()
     return (
         conn.ssh_client.exec_command(f"cd {pwd} ; {cmd}")[1]
         .read()

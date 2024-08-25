@@ -1,5 +1,6 @@
 import pathlib
 import typing
+from typing_extensions import Self
 from shlex import quote
 
 import paramiko
@@ -57,7 +58,7 @@ class Connection:
         else:
             pprint("[green]success")
         self.exec_command = self.ssh_client.exec_command
-        set_global_connection(self)
+        # set_global_connection(self)
 
     def exec_command_sample(self, command: str) -> str:
         """sample exec a command, without advanced function
@@ -97,7 +98,7 @@ class Connection:
         return self.__cmd
 
     @classmethod
-    def default_connection(cls) -> typing.Self:
+    def default_connection(cls) -> Self:
         if cls._global_connect is None:
             cls._global_connect = cls(get_global_config().connect_config)
         return cls._global_connect
@@ -109,17 +110,3 @@ class Connection:
         print(
             f"connection({self.config.host}:{self.config.port}@{self.config.username}) close"
         )
-
-
-global_connection: Connection | None = None
-
-
-def set_global_connection(connection: Connection):
-    global global_connection
-    global_connection = connection
-
-
-def get_global_connection() -> Connection:
-    if global_connection is None:
-        raise ValueError("global connection is not init")
-    return global_connection
