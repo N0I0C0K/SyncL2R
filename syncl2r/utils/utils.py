@@ -1,7 +1,7 @@
 import os
-import sys
 import pathlib
 import typing
+
 from shlex import quote
 from rich.filesize import decimal
 from rich.markup import escape
@@ -78,12 +78,12 @@ def get_dir_tree(
 
 
 def show_sync_file_tree(
-    syncConfig: FileSyncConfig, *escape_file: typing.Callable[[pathlib.Path], bool]
+    sync_config: FileSyncConfig, *escape_file: typing.Callable[[pathlib.Path], bool]
 ):
     pprint("[red bold]file tree prepare to sync: ")
 
     esc_func_list: list[typing.Callable[[pathlib.Path], bool]] = []
-    esc_func_list.append(syncConfig.escape_file)
+    esc_func_list.append(sync_config.escape_file)
     esc_func_list.extend(escape_file)
 
     def esc_func(path: pathlib.Path) -> bool:
@@ -91,10 +91,26 @@ def show_sync_file_tree(
 
     pprint(
         Padding(
-            get_dir_tree(syncConfig.root_path, esc_func),
+            get_dir_tree(sync_config.root_path, esc_func),
             (0, 0, 0, 0),
         )
     )
+
+
+class _FileState(typing.NamedTuple):
+    file_path: str
+    state: typing.Literal["A", "D", "M"]
+
+
+def get_diff_files_use_git(sync_config: FileSyncConfig) -> list[_FileState]:
+    assert sync_config.use_git
+    git_status_res = os.popen("git status -s").read()
+    res = []
+    for line in git_status_res.split("\n"):
+        pair = line.strip().split()
+        res.append(_FileState(pair[1], pair[0][-1]))  # type: ignore
+
+    return res
 
 
 def get_file_md5(path: str) -> str | None:

@@ -31,8 +31,6 @@ def push(
 
         # store diffrent file's Path obj
         diff_files: list[pathlib.Path] = []
-        # store diffrent file's relative path string.This is actually redundant, but you can do one less calculation
-        diff_files_rp: list[str] = []
 
         if mode == 1:
             pprint(
@@ -66,7 +64,6 @@ def push(
                     return True
                 if not path.is_dir():
                     diff_files.append(path)
-                    diff_files_rp.append(rp)
                 # else:
                 #     if rp not in dir_set:
                 #         diff_files.append(path)
@@ -77,8 +74,9 @@ def push(
             if not typer.confirm("Do you want to continue?", default=False):
                 return
 
-        # Stop running task
-        stop_last_pids(connection)
+        if invoke_event:
+            # Stop running task
+            stop_last_pids(connection)
 
         if (
             invoke_event

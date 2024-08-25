@@ -23,6 +23,7 @@ class FileSyncConfig(BaseModel):
     root_path: str
     remote_root_path: str
     exclude: Annotated[list[str], Field(default_factory=list)]
+    use_git: Annotated[bool, Field(default=True)]
 
     def escape_file(self, path: pathlib.Path) -> bool:
         for par in self.exclude:
@@ -35,15 +36,16 @@ class FileSyncConfig(BaseModel):
             return True
         return False
 
-    def __init__(self, **data):
+    def __post__init__(self):
         from .constant import update_local_root_path, update_remote_root_path
 
-        super().__init__(**data)
         self.root_path = os.path.abspath(self.root_path)
 
         update_local_root_path(self.root_path)
         update_remote_root_path(self.remote_root_path)
-        # self.exclude.append("./.l2r")
+
+        if not os.path.exists("./git"):
+            self.use_git = False
 
 
 class AdvancedCommand(BaseModel):
