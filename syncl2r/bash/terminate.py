@@ -35,4 +35,5 @@ kill "${pids[@]}"
 
 
 def kill_pid_and_child(pids: list[str]):
+    assert "0" not in pids and "1" not in pids
     return execute_bash(sh, " ".join(map(lambda x: f'"{x}"', pids)))

@@ -1,4 +1,5 @@
 import os
+import sys
 import pathlib
 import typing
 from shlex import quote
@@ -7,8 +8,10 @@ from rich.markup import escape
 from rich.text import Text
 from rich.tree import Tree
 from rich.padding import Padding
+
 from syncl2r.console import pprint
 from syncl2r.config import FileSyncConfig
+from syncl2r.utils.md5 import batch_calc_local_files_md5
 
 MAX_CHILD_NUM = 20
 
@@ -95,17 +98,8 @@ def show_sync_file_tree(
 
 
 def get_file_md5(path: str) -> str | None:
-    path = os.path.abspath(path)
-    if not os.path.exists(path):
-        return None
-    match os.name:
-        case "nt":
-            res = os.popen(f'certutil -hashfile "{path}" md5')
-            mds = res.read().split("\n")[1]
-            return mds
-        case "posix":
-            res = os.popen(f"md5sum {quote(path)}")
-            return res.read()
+    res = batch_calc_local_files_md5(path)
+    return res.get(path, None)
 
 
 if __name__ == "__main__":
