@@ -4,6 +4,8 @@ import paramiko
 import typing
 import pathlib
 
+from os import fspath
+from typing_extensions import Protocol
 from shlex import quote
 from .utils import get_file_md5
 from rich.tree import Tree
@@ -144,7 +146,16 @@ def get_remote_file_tree(path: str, sftp: paramiko.SFTPClient):
     return tree
 
 
-def remote_file_list_to_tree(files: list[str], pwd: str) -> Tree:
+class IsDirAble(Protocol):
+    def is_dir(self) -> bool: ...
+
+    def __fspath__(self) -> str: ...
+
+
+def remote_file_list_to_tree(
+    files: list[IsDirAble],
+    pwd: str,
+) -> Tree:
     tree = Tree(
         f":open_file_folder: [link file://{pwd}]{pwd}",
         guide_style="bold bright_blue",
@@ -153,23 +164,22 @@ def remote_file_list_to_tree(files: list[str], pwd: str) -> Tree:
 
     def dfs(root: Tree, par_path: str):
         nonlocal t_idx
-        while t_idx < len(files) and files[t_idx].startswith(par_path):
-            l_idx = files[t_idx].find("||")
-            if l_idx == -1:
+        while t_idx < len(files) and (it_path := fspath(it := files[t_idx])).startswith(
+            par_path
+        ):
+            if it.is_dir():
                 branch = root.add(
-                    f"[bold magenta]:open_file_folder: {files[t_idx]}",
+                    f"[bold magenta]:open_file_folder: {fspath(it)}",
                     style="",
                     guide_style="",
                 )
-                t_idx += 1
-                dfs(branch, files[t_idx - 1])
+                dfs(branch, it_path)
             else:
-                filename = files[t_idx][:l_idx]
-                text_filename = Text(filename, "green")
+                text_filename = Text(it_path, "green")
                 text_filename.highlight_regex(r"\..*$", "bold red")
                 icon = "📄 "
                 root.add(Text(icon) + text_filename)
-                t_idx += 1
+            t_idx += 1
 
     dfs(tree, "")
     return tree

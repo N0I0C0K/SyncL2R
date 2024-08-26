@@ -24,9 +24,14 @@ def walk_directory(
     max_child_num: int = MAX_CHILD_NUM,
 ) -> None:
     """Recursively build a Tree with directory contents."""
-    # Sort dirs first then by filename
-    paths = sorted(
-        pathlib.Path(directory).iterdir(),
+    if escape_func is None:
+        paths = list(pathlib.Path(directory).iterdir())
+    else:
+        paths = list(
+            filter(lambda it: not escape_func(it), pathlib.Path(directory).iterdir())
+        )
+
+    paths.sort(
         key=lambda path: (path.is_file(), path.name.lower()),
     )
     child_file_num = len(paths)

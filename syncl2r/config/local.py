@@ -15,8 +15,8 @@ class ConnectConfig(BaseModel):
     host: str
     username: str
     port: int = 22
-    password: str | None
-    key_name: str | None
+    password: str | None = None
+    key_name: str | None = None
 
 
 class FileSyncConfig(BaseModel):
@@ -36,7 +36,7 @@ class FileSyncConfig(BaseModel):
             return True
         return False
 
-    def __post__init__(self):
+    def model_post_init(self, __context) -> None:
         from .constant import update_local_root_path, update_remote_root_path
 
         self.root_path = os.path.abspath(self.root_path)
@@ -135,7 +135,7 @@ def set_global_config(config: ConfigModel) -> ConfigModel:
 
 def get_global_config() -> ConfigModel:
     if global_config is None:
-        raise ValueError("config is not initd")
+        load_config()
     return global_config
 
 

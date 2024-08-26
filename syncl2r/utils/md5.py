@@ -52,7 +52,7 @@ class MD5SumFileMD5Calculator(FileMD5Calculator):
     def parse(cls, cmd_output: str) -> dict[str, str]:
         res = {}
         for line in cmd_output.split("\n"):
-            line_res = line.split(" ")
+            line_res = line.split()
             if len(line_res) == 2:
                 res[line_res[1]] = line_res[0]
         return res

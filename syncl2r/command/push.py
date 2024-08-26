@@ -8,7 +8,7 @@ from syncl2r.sync_core import RemoteFileManager, SyncMode
 from syncl2r.utils.utils import show_sync_file_tree, get_file_md5
 from syncl2r.utils.sftp_utils import rfile_equal_lfile
 from syncl2r.command_core.deploy_core import stop_last_pids
-from syncl2r.bash import get_remote_tree
+from syncl2r.bash import get_remote_files_with_md5
 
 
 @app.command(
@@ -39,19 +39,14 @@ def push(
             if not typer.confirm("sure you want to continue?"):
                 return
         else:
-            remote_files = get_remote_tree(
+            remote_files = get_remote_files_with_md5(
                 config_modal.file_sync_config.exclude,
             )
 
-            remote_md5_map: dict[str, str] = dict()
-            dir_set: set[str] = set()
-
-            for file in remote_files:
-                t = file.find("||")
-                if t != -1:
-                    remote_md5_map[file[:t]] = file[t + 2 :]
-                else:
-                    dir_set.add(file)
+            remote_md5_map: dict[str, str | None] = {
+                it.path: it.md5 for it in remote_files
+            }
+            # dir_set: set[str] = {it.path for it in remote_files if it.md5 is None}
 
             def esc_equal_file(path: pathlib.Path):
                 rp = path.relative_to(
@@ -70,7 +65,9 @@ def push(
                 return False
 
             show_sync_file_tree(config_modal.file_sync_config, esc_equal_file)
-
+            if len(diff_files) == 0:
+                pprint("[warning]no file change")
+                return
             if not typer.confirm("Do you want to continue?", default=False):
                 return
 

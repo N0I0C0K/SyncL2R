@@ -1,13 +1,16 @@
 import paramiko
 import pathlib
 import enum
+import rich.progress as progress
+from syncl2r.bash.mkdir import mkdir as remote_mkdir
 
 from io import BufferedWriter
 
 from syncl2r.connect_core import Connection
 from syncl2r.utils import sftp_utils, utils
 from syncl2r.console import pprint
-from rich import padding, progress
+from rich import padding
+
 from syncl2r.config import get_global_config, FileSyncConfig
 
 
@@ -69,13 +72,15 @@ class RemoteFileManager:
         if not file_path.exists():
             pprint(f"[danger]{file_path} not exist")
             return
-        if sftp_utils.exist_remote(
-            r_path.as_posix(), self.sftp_client
-        ) and sftp_utils.rfile_equal_lfile(
-            r_path.as_posix(), file_path.as_posix(), self.ssh_client
-        ):
-            pprint(f"[warning]{file_path.name} has no change, skip")
-            return
+        if sftp_utils.exist_remote(r_path.as_posix(), self.sftp_client):
+            if sftp_utils.rfile_equal_lfile(
+                r_path.as_posix(), file_path.as_posix(), self.ssh_client
+            ):
+                pprint(f"[warning]{file_path.name} has no change, skip")
+                return
+        else:
+            if not sftp_utils.exist_remote(r_path.parent.as_posix(), self.sftp_client):
+                remote_mkdir(r_path.parent.as_posix(), True, ssh_client=self.ssh_client)
         with progress.Progress() as pross:
             task = pross.add_task(
                 f"[green]uploading [yellow]{file_path.relative_to(self.config.root_path)}"

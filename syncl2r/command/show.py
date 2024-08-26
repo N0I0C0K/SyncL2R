@@ -3,8 +3,11 @@ from .app import app
 from syncl2r.config import get_global_config
 from syncl2r.utils.utils import show_sync_file_tree
 from syncl2r.connect_core import Connection
-from syncl2r.utils.sftp_utils import show_remote_file_tree, remote_file_list_to_tree
-from syncl2r.bash import get_remote_tree
+from syncl2r.utils.sftp_utils import (
+    show_remote_file_tree,
+    remote_file_list_to_tree,
+)
+from syncl2r.bash import get_remote_files_with_md5
 
 
 @app.command(name="show", help="show file struct for the current sync file")
@@ -20,10 +23,11 @@ def show_files(
         from syncl2r.console import pprint
         from rich.padding import Padding
 
+        remote_files = get_remote_files_with_md5(
+            global_config.file_sync_config.exclude,
+        )
         tree = remote_file_list_to_tree(
-            get_remote_tree(
-                global_config.file_sync_config.exclude,
-            ),
+            list(remote_files),
             global_config.file_sync_config.remote_root_path,
         )
         pprint(

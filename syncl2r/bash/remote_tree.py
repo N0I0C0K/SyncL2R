@@ -1,3 +1,4 @@
+import typing
 from .executor import execute_bash, execute_cmd
 
 remote_tree = """
@@ -61,17 +62,37 @@ traverse_directory "$(pwd)"
 """
 
 
-def get_remote_tree(pattens: list[str]) -> list[str]:
+class FileWithMD5(typing.NamedTuple):
+    path: str
+    md5: str | None
+
+    @classmethod
+    def build_from_str(cls, s: str):
+        pair = s.split("||")
+        path = pair[0]
+        md5 = pair[1] if len(pair) > 1 else None
+        return cls(path, md5)
+
+    def __fspath__(self) -> str:
+        return self.path
+
+    def is_dir(self) -> bool:
+        return self.md5 is None
+
+
+def get_remote_files_with_md5(exclude_pattens: list[str]) -> list[FileWithMD5]:
     comm_path = execute_cmd("pwd")
 
     out = execute_bash(
         remote_tree,
-        " ".join(map(lambda x: f'"{x}"', pattens)),
+        " ".join(map(lambda x: f'"{x}"', exclude_pattens)),
     )
 
     files = list(
         map(
-            lambda x: x.removeprefix(comm_path).removeprefix("/"),
+            lambda x: FileWithMD5.build_from_str(
+                x.removeprefix(comm_path).removeprefix("/")
+            ),
             out.split("\n"),
         )
     )
