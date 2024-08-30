@@ -1,5 +1,6 @@
 import pathlib
 import typing
+import paramiko.hostkeys
 from typing_extensions import Self
 from shlex import quote
 
@@ -19,7 +20,7 @@ class Connection:
         self.ssh_client = paramiko.SSHClient()
         self.close = self.ssh_client.close
 
-        self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh_client.set_missing_host_key_policy(paramiko.WarningPolicy())
         self.ssh_client.load_system_host_keys()
         self.__sftp_client: paramiko.SFTPClient | None = None
         self.__utils: ConnectionFunction | None = None
@@ -41,15 +42,18 @@ class Connection:
                 )
             elif self.config.key_name is not None:
                 key_file = pathlib.Path.home() / ".ssh" / self.config.key_name
-                if not key_file.exists():
-                    raise FileNotFoundError(f"{key_file.as_posix()} can not be found")
-                with key_file.open() as f:
-                    pkey = paramiko.RSAKey.from_private_key(f)
-                self.ssh_client.connect(
-                    self.config.host, self.config.port, self.config.username, pkey=pkey
-                )
+                self._connect_use_key(key_file)
             else:
-                raise ValueError("connection config is invaild")
+                default_ssh_path = pathlib.Path.home() / ".ssh"
+                for key_file in default_ssh_path.iterdir():
+                    if key_file.is_file() and key_file.suffix == "":
+                        try:
+                            self._connect_use_key(key_file)
+                        except paramiko.SSHException:
+                            continue
+                        else:
+                            break
+
         except TimeoutError:
             pprint(
                 f"[danger.high]can not connect to the {self.config.host}:{self.config.port}!"
@@ -59,6 +63,15 @@ class Connection:
             pprint("[green]success")
         self.exec_command = self.ssh_client.exec_command
         # set_global_connection(self)
+
+    def _connect_use_key(self, key_file: pathlib.Path):
+        if not key_file.exists():
+            raise FileNotFoundError(f"{key_file.as_posix()} can not be found")
+        with key_file.open() as f:
+            pkey = paramiko.RSAKey.from_private_key(f)
+        self.ssh_client.connect(
+            self.config.host, self.config.port, self.config.username, pkey=pkey
+        )
 
     def exec_command_sample(self, command: str) -> str:
         """sample exec a command, without advanced function
